@@ -1,0 +1,48 @@
+#preloader {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+/* Gambar animasi stretch */
+#preloader img {
+      width: 120px;
+      animation: stretchIn 0.8s ease forwards;
+    }
+
+/* Titik loading */.dots {
+      display: flex;
+      margin-top: 20px;
+    }
+.dot {
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      background: #4f46e5; /* Indigo */
+      border-radius: 50%;
+      animation: bounce 1s infinite;
+    }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Keyframes */
+@keyframes stretchIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      60% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+@keyframes stretchOut {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+
+@keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+      40% { transform: scale(1.2); opacity: 1; }
+    }
