@@ -78,7 +78,7 @@
 
   <!-- Footer -->
   <footer class="bg-gray-50 text-center p-4 text-sm text-gray-500">
-    &copy; {{ date('Y') }} Sistem Kasir - All Rights Reserved
+    &copy;  RyyzDev - All Rights Reserved
   </footer>
 </body>
 </html>

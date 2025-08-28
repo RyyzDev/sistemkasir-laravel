@@ -25,11 +25,24 @@
             <p class="text-sm text-indigo-100 mt-1">Silakan login untuk melanjutkan</p>
         </div>
 
+
+
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+
         <!-- Form -->
         <div class="p-8">
-         <form action="/register" method="POST" class="space-y-6">
+         <form action="/login" method="POST" class="space-y-6">
                 @csrf
-
                 <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -44,20 +57,15 @@
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-700">
                 </div>
 
-                <!-- Remember -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center text-sm text-gray-600">
-                        <input type="checkbox" name="remember" class="mr-2 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                        Ingat saya
-                    </label>
-                    <a href="#" class="text-sm text-indigo-600 hover:underline">Lupa password?</a>
-                </div>
-
                 <!-- Submit -->
                 <button type="submit"
                         class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
                     Masuk
                 </button>
+                 <a href="/register"
+                        class="w-full bg-gradient-to-r from-white-600 to-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                    Belum Punya Akun? Daftar!
+                </a>
             </form>
         </div>
 

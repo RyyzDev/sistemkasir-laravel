@@ -60,7 +60,7 @@
             </form>
 
               <div class="bg-gray-50 text-center p-4 text-sm text-red-500">
-           cuma uji coba, langsung Login aja pakai akun yang di sediakan yaa!
+           cuma uji coba, langsung <a href="/login">LOGIN aja</a> pakai akun yang di sediakan yaa!
         </div>
         </div>
 

@@ -12,7 +12,7 @@
     <!-- Navbar -->
     <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-            <h1 class="text-xl font-bold">Sistem Kasir</h1>
+            <h1 class="text-xl font-bold"> &copy;  RyyzDev | Sistem Kasir</h1>
             <nav class="space-x-6">
                 <a href="{{ url('/dashboard') }}" class="hover:text-indigo-200">Dashboard</a>
                 <a href="{{ url('/laporan') }}" class="hover:text-indigo-200 font-semibold underline">Laporan</a>
