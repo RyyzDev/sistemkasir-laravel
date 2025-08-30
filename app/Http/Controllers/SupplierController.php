@@ -42,4 +42,5 @@ class SupplierController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Supplier berhasil ditambahkan!');
     }
+
 }

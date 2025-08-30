@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
 
+public function index()
+{
+    $products = \App\Models\Supplier::all(); // ambil semua produk
+    return view('dashboard', compact('products'));
+}
 
-    public function index(){
-        $produk = Supplier::all();
-        return view('dashboard', compact('produk'));
-    }
 
-        
+
 }

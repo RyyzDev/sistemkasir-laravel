@@ -34,4 +34,7 @@ public function transactionDetails()
     return $this->hasMany(TransactionDetail::class, 'product_id');
 }
 
+
+
+
 }

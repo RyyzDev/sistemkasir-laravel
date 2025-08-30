@@ -37,3 +37,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/transactions', [TransactionController::class, 'index']);
     Route::get('/api/transactions/{id}', [TransactionController::class, 'show']);
 });
+

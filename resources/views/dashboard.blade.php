@@ -54,110 +54,78 @@
   </div>
 
   <!-- Tabs -->
-  <main x-data="{ 
-    tab: 'produk', 
-    modal: '',
-    suppliers: [],
-    deskripsi: [''],
-    cartItems: [],
-    searchResults: [
-      { id: 1, nama: 'Indomie Goreng', kode: 'PRD001', price: 3500, qty: 50 },
-      { id: 2, nama: 'Teh Pucuk Harum', kode: 'PRD002', price: 4000, qty: 15 },
-      { id: 3, nama: 'Aqua Botol 600ml', kode: 'PRD003', price: 3000, qty: 0 },
-      { id: 4, nama: 'Kopiko 78', kode: 'PRD004', price: 1500, qty: 25 },
-      { id: 5, nama: 'Chitato Rasa Sapi Panggang', kode: 'PRD005', price: 8500, qty: 12 }
-    ],
-    searchQuery: '',
-    
-    // Method untuk menambah produk ke keranjang
-    addToCart(product) {
-      if (product.qty <= 0) {
-        alert('Stok produk kosong!');
-        return;
-      }
-      
-      // Cek apakah produk sudah ada di cart
-      const existingItem = this.cartItems.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        // Jika sudah ada, tambah quantity
-        if (existingItem.quantity < product.qty) {
-          existingItem.quantity += 1;
-          existingItem.subtotal = existingItem.quantity * existingItem.price;
-        } else {
-          alert('Quantity melebihi stok yang tersedia!');
-          return;
+  <main x-data="{
+        tab: 'produk',
+        cartItems: [],
+        modal: '',
+        searchQuery: '',
+        products: {{ Js::from($products) }},
+        get searchResults() {
+            if (this.searchQuery === '') {
+                return this.products;
+            }
+            return this.products.filter(p => 
+                p.nama.toLowerCase().includes(this.searchQuery.toLowerCase())
+            );
+        },
+        addToCart(product) {
+            const existingItem = this.cartItems.find(item => item.id === product.id);
+            if (existingItem) {
+                if (existingItem.quantity < product.qty) {
+                    existingItem.quantity += 1;
+                    existingItem.subtotal = existingItem.quantity * existingItem.price;
+                } else {
+                    alert('Quantity melebihi stok yang tersedia!');
+                    return;
+                }
+            } else {
+                this.cartItems.push({
+                    id: product.id,
+                    nama: product.nama,
+                    kode: product.kode,
+                    price: product.price,
+                    quantity: 1,
+                    subtotal: product.price,
+                    maxStock: product.qty
+                });
+            }
+
+            this.modal = '';
+        },
+        updateQuantity(itemId, newQty) {
+            const item = this.cartItems.find(i => i.id === itemId);
+            if (item) {
+                if (newQty <= 0) {
+                    this.removeFromCart(itemId);
+                } else if (newQty <= item.maxStock) {
+                    item.quantity = parseInt(newQty);
+                    item.subtotal = item.quantity * item.price;
+                } else {
+                    alert('Quantity melebihi stok yang tersedia!');
+                }
+            }
+        },
+        removeFromCart(itemId) {
+            this.cartItems = this.cartItems.filter(item => item.id !== itemId);
+        },
+        getTotal() {
+            return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
+        },
+        formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 0 
+            }).format(amount);
+        },
+        clearTransaction() {
+            if (confirm('Apakah Anda yakin ingin membatalkan semua transaksi?')) {
+                this.cartItems = [];
+                this.modal = '';
+            }
         }
-      } else {
-        // Jika belum ada, tambah item baru
-        this.cartItems.push({
-          id: product.id,
-          nama: product.nama,
-          kode: product.kode,
-          price: product.price,
-          quantity: 1,
-          subtotal: product.price,
-          maxStock: product.qty
-        });
-      }
-      
-      // Tutup modal setelah menambah
-      this.modal = '';
-    },
-    
-    // Method untuk mengupdate quantity
-    updateQuantity(itemId, newQty) {
-      const item = this.cartItems.find(i => i.id === itemId);
-      if (item) {
-        if (newQty <= 0) {
-          this.removeFromCart(itemId);
-        } else if (newQty <= item.maxStock) {
-          item.quantity = parseInt(newQty);
-          item.subtotal = item.quantity * item.price;
-        } else {
-          alert('Quantity melebihi stok yang tersedia!');
-        }
-      }
-    },
-    
-    // Method untuk menghapus item dari cart
-    removeFromCart(itemId) {
-      this.cartItems = this.cartItems.filter(item => item.id !== itemId);
-    },
-    
-    // Method untuk menghitung total
-    getTotal() {
-      return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
-    },
-    
-    // Method untuk format rupiah
-    formatRupiah(amount) {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
-    },
-    
-    // Method untuk search produk
-    get filteredProducts() {
-      if (!this.searchQuery) return this.searchResults;
-      
-      return this.searchResults.filter(product => 
-        product.nama.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        product.kode.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    },
-    
-    // Method untuk clear transaksi
-    clearTransaction() {
-      if (confirm('Apakah Anda yakin ingin membatalkan semua transaksi?')) {
-        this.cartItems = [];
-        this.modal = '';
-      }
-    }
-  }" class="max-w-7xl mx-auto px-6 py-8">
+    }" class="max-w-7xl mx-auto px-6 py-8">
 
     <!-- Tab Navigation -->
     <!-- Tab Navigation -->
@@ -446,8 +414,13 @@
             
             <!-- Search Input -->
             <div class="mb-4">
-              <input type="text" x-model="searchQuery" placeholder="Masukkan nama/kode produk..." 
-                class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <input 
+  type="text" 
+  x-model="searchQuery"
+  placeholder="Cari produk..." 
+  class="border p-2 w-full rounded"
+/>
+
             </div>
 
             <!-- Product Table -->
@@ -463,32 +436,22 @@
                 </thead>
                 <tbody>
                   <!-- Loop filtered products -->
-                  <template x-for="product in filteredProducts" :key="product.id">
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                      <td class="py-3 px-4">
-                        <div>
-                          <p class="font-medium text-gray-900" x-text="product.nama"></p>
-                          <p class="text-xs text-gray-500" x-text="'Kode: ' + product.kode"></p>
-                        </div>
-                      </td>
-                      <td class="py-3 px-4 text-gray-900" x-text="formatRupiah(product.price)"></td>
-                      <td class="py-3 px-4">
-                        <span :class="product.qty > 10 ? 'bg-green-100 text-green-800' : product.qty > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'" 
-                          class="px-2 py-1 text-xs rounded-full" x-text="product.qty + ' pcs'">
-                        </span>
-                      </td>
-                      <td class="py-3 px-4 text-center">
-                        <button @click="addToCart(product)" :disabled="product.qty <= 0"
-                          :class="product.qty > 0 ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
-                          class="px-3 py-1 text-xs rounded transition-colors">
-                          <span x-text="product.qty > 0 ? 'Pilih' : 'Kosong'"></span>
-                        </button>
-                      </td>
-                    </tr>
-                  </template>
+         <template x-for="product in searchResults" :key="product.id">
+  <tr class="border-b">
+    <td class="py-2 px-4" x-text="product.nama"></td>
+    <td class="py-2 px-4" x-text="formatRupiah(product.price)"></td>
+    <td class="py-2 px-4" x-text="product.qty"></td>
+    <td class="py-2 px-4 text-center">
+      <button @click="addToCart(product)" class="bg-blue-500 text-white px-2 py-1 rounded">
+        Tambah
+      </button>
+    </td>
+  </tr>
+</template>
+
                   
                   <!-- No results message -->
-                  <tr x-show="filteredProducts.length === 0">
+                  <tr x-show="searchResults.length === 0">
                     <td colspan="4" class="py-8 text-center text-gray-500">
                       <div class="flex flex-col items-center">
                         <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -505,7 +468,7 @@
 
             <!-- Footer Actions -->
             <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-              <p class="text-sm text-gray-600" x-text="'Menampilkan ' + filteredProducts.length + ' produk'"></p>
+              <p class="text-sm text-gray-600" x-text="'Menampilkan ' + searchResults.length + ' produk'"></p>
               <div class="flex space-x-2">
                 <button @click="modal = ''; searchQuery = ''" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
                   Tutup
