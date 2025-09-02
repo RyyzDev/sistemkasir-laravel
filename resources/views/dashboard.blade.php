@@ -59,7 +59,11 @@
         cartItems: [],
         modal: '',
         searchQuery: '',
+        showSuccess: false,
+        totalBayar: 0, // input dari user
+        kembalian: 0,
         products: {{ Js::from($products) }},
+
         get searchResults() {
             if (this.searchQuery === '') {
                 return this.products;
@@ -111,6 +115,15 @@
         getTotal() {
             return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
         },
+        prosesPembayaran() {
+        const total = this.getTotal();
+        if (this.totalBayar < total) {
+            alert('Jumlah bayar kurang dari total!');
+            return;
+        }
+        this.kembalian = this.totalBayar - total;
+        this.showSuccess = true;
+    },
         formatRupiah(amount) {
             return new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
@@ -124,7 +137,12 @@
                 this.cartItems = [];
                 this.modal = '';
             }
-        }
+        },
+        successClearTransaction(){
+          this.cartItems = [];
+          this.modal = '';
+        },
+
     }" class="max-w-7xl mx-auto px-6 py-8">
 
     <!-- Tab Navigation -->
@@ -244,11 +262,11 @@
 
     <!-- Tab 2: Supplier -->
     <div x-show="tab === 'supplier'" class="space-y-6">
-      <h2 class="text-2xl font-bold">Data Supplier</h2>
+      <h2 class="text-2xl font-bold">Tambah Supplier Baru</h2>
       
       <!-- Form Tambah Supplier -->
       <div class="bg-white shadow rounded-lg p-6 space-y-4">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Tambah Supplier Baru</h3>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Supplier</h3>
         
         <form action="/suppliers" method="POST" class="space-y-4">
           @csrf
@@ -284,6 +302,24 @@
             <textarea name="alamat" rows="2" 
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
           </div>
+       <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Produk</h3>
+          <div>
+              <label class="block text-sm font-medium mb-1 text-gray-700">Nama Produk *</label>
+              <input type="text" name="nama" required 
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1 text-gray-700">Price *</label>
+              <input type="text" name="price" required 
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1 text-gray-700">Quantity *</label>
+              <input type="text" name="qty" required 
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+          </div>
 
           <!-- Deskripsi Dinamis -->
           <div>
@@ -291,7 +327,7 @@
               <label class="block text-sm font-medium text-gray-700">Deskripsi Produk</label>
               <button type="button" @click="deskripsi.push('')" 
                 class="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                + Tambah Deskripsi
+                + Tambah Deskripsi (masih pengembangan... :)
               </button>
             </div>
             
@@ -313,14 +349,7 @@
               </template>
             </div>
           </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1 text-gray-700">Status</label>
-            <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-              <option value="1">Aktif</option>
-              <option value="0">Tidak Aktif</option>
-            </select>
-          </div>
+    
 
           <div class="flex justify-end space-x-3 pt-4">
             <button type="reset" 
@@ -350,22 +379,35 @@
                 <th class="py-3 px-4 font-medium">Aksi</th>
               </tr>
             </thead>
+            @foreach($products as $data)
             <tbody>
               <tr class="border-b border-gray-100">
-                <td class="py-3 px-4">SUP001</td>
-                <td class="py-3 px-4">PT. Contoh Supplier</td>
-                <td class="py-3 px-4">081234567890</td>
+                <td class="py-3 px-4">{{$data->kode_supplier}}</td>
+                <td class="py-3 px-4">{{$data->nama_supplier}}</td>
+                <td class="py-3 px-4">{{$data->kontak}}</td>
                 <td class="py-3 px-4">
-                  <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Aktif</span>
+                  @if($data->status == 1)
+                  <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                  Aktif
+                  </span>
+                  @else
+                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                  Tidak Aktif
+                  </span>
+                  @endif
                 </td>
                 <td class="py-3 px-4">
                   <div class="flex space-x-2">
-                    <button class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                    <button class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                    <form action="{{route('products.destroy', $data->id)}}" method="POST" onsubmit="return confirm('Yakin Mau Menghapus?')">
+                      @method('delete')
+                      @csrf
+                       <button class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                  </form>
                   </div>
                 </td>
               </tr>
             </tbody>
+            @endforeach
           </table>
         </div>
       </div>
@@ -511,26 +553,63 @@
                 <label class="block mb-2 font-medium">Metode Pembayaran</label>
                 <select class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
                   <option>Cash</option>
-                  <option>QRIS</option>
-                  <option>Debit Card</option>
-                  <option>Credit Card</option>
+                  <option>QRIS (integrasi API payment gateway)</option>
+                  <option>Debit Card (integrasi API payment gateway)</option>
+                  <option>Credit Card (integrasi API payment gateway)</option>
                 </select>
               </div>
               
-              <div>
-                <label class="block mb-2 font-medium">Jumlah Bayar</label>
-                <input type="number" :placeholder="'Minimal: ' + formatRupiah(getTotal())" 
-                  class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
+             <div>
+              <label class="block mb-2 font-medium">Jumlah Bayar</label>
+              <input type="number" 
+                     x-model="totalBayar" 
+                     :placeholder="'Minimal: ' + formatRupiah(getTotal())" 
+                     class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
               </div>
               
               <div class="flex justify-end space-x-2 pt-4">
                 <button @click="modal = ''" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                   Batal
                 </button>
-                <button class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                  Proses Pembayaran
-                </button>
+               <button @click="prosesPembayaran()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                Proses Pembayaran
+              </button>
               </div>
+<!-- Popup Sukses -->
+<div 
+  x-show="showSuccess" 
+  x-transition 
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
+    
+    <!-- Icon centang -->
+    <div class="flex justify-center mb-4">
+      <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+
+    <h2 class="text-xl font-bold mb-2">Pembayaran Berhasil!</h2>
+    <div class="text-gray-700 text-sm text-left space-y-1 mb-4">
+      <p><span class="font-medium">Total Harga:</span> <span x-text="formatRupiah(getTotal())"></span></p>
+      <p><span class="font-medium">Jumlah Bayar:</span> <span x-text="formatRupiah(totalBayar)"></span></p>
+      <p><span class="font-medium">Kembalian:</span> <span x-text="formatRupiah(kembalian)"></span></p>
+    </div>
+
+    <button 
+      @click="showSuccess = false; modal = ''; successClearTransaction()" 
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+      Tutup
+    </button>
+     <button 
+  
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+      Cetak Struk
+    </button>
+  </div>
+</div>
+
+</div>
             </div>
           </div>
         </div>

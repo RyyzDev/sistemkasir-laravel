@@ -6,23 +6,28 @@ use App\Http\Controllers\registerController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\DashboardController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+Route::get('/', [loginController::class, 'index']);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
 Route::get('/laporan', function(){
     return view('laporan');
-});
+})->middleware('auth');
 
 Route::get('/cashend', function(){
     return view('cashend');
-});
+})->middleware('auth');
 
-Route::get('/login', [loginController::class, 'index'])->name('login');
-Route::get('/register', [registerController::class, 'index']);
+
+
+Route::get('/login', [loginController::class, 'index'])->name('login')->middleware('guest');
+Route::get('/register', [registerController::class, 'index'])->middleware('guest')->name('register');
 
 
 //method post
 Route::post('/register', [registerController::class, 'store']);
 Route::post('/suppliers', [SupplierController::class, 'store']);
+Route::delete('/destroy/{id}', [SupplierController::class, 'destroy'])->name('products.destroy');
 Route::post('/login', [loginController::class, 'authenticate']);
 Route::post('/logout', [loginController::class, 'logout']);
 
@@ -36,5 +41,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/transactions', [TransactionController::class, 'store']);
     Route::get('/api/transactions', [TransactionController::class, 'index']);
     Route::get('/api/transactions/{id}', [TransactionController::class, 'show']);
+
+
+    //protected
+
 });
 

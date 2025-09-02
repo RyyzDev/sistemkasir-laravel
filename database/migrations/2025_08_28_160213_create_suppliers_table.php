@@ -11,14 +11,14 @@ return new class extends Migration
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
             $table->string('nama_supplier');
-            $table->string('kode_supplier')->unique();
+            $table->string('kode_supplier');
             $table->string('kontak')->nullable();
             $table->string('email')->nullable();
             $table->text('alamat')->nullable();
-            $table->string('nama');->unique();
+            $table->string('nama') ->unique();
             $table->integer('qty');
             $table->integer('price');
-            $table->json('deskripsi')->nullable(); // JSON untuk array deskripsi
+           // $table->json('deskripsi')->nullable(); // JSON untuk array deskripsi
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

@@ -18,21 +18,21 @@ class Supplier extends Model
         'nama',
         'qty',
         'price',
-        'deskripsi',
+        //'deskripsi',
         'status'
     ];
 
 
     protected $casts = [
-        'deskripsi' => 'array', // Cast JSON ke array
+        //'deskripsi' => 'array', // Cast JSON ke array
         'status' => 'boolean'
     ];
 
-        // Tambahkan di model Supplier
-public function transactionDetails()
-{
-    return $this->hasMany(TransactionDetail::class, 'product_id');
-}
+//         // Tambahkan di model Supplier
+// public function transactionDetails()
+// {
+//     return $this->hasMany(TransactionDetail::class, 'product_id');
+// }
 
 
 
