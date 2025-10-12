@@ -2,6 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Dashboard Sistem Kasir</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="//unpkg.com/alpinejs" defer></script>
@@ -60,9 +61,10 @@
         modal: '',
         searchQuery: '',
         showSuccess: false,
-        totalBayar: 0, // input dari user
+        totalBayar: 0,
         kembalian: 0,
         products: {{ Js::from($products) }},
+        deskripsi: [''],
 
         get searchResults() {
             if (this.searchQuery === '') {
@@ -115,15 +117,66 @@
         getTotal() {
             return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
         },
-        prosesPembayaran() {
-        const total = this.getTotal();
-        if (this.totalBayar < total) {
-            alert('Jumlah bayar kurang dari total!');
+        async prosesPembayaran() {
+    const total = this.getTotal();
+    if (this.totalBayar < total) {
+        alert('Jumlah bayar kurang dari total!');
+        return;
+    }
+    this.kembalian = this.totalBayar - total;
+    
+    const paymentMethodSelect = document.querySelector('select[name=payment_method]');
+    const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'Cash';
+    
+    const items = this.cartItems.map(item => ({
+        id: item.id,
+        quantity: item.quantity
+    }));
+    
+    try {
+        const csrfToken = document.querySelector('meta[name=csrf-token]');
+        const response = await fetch('/transactions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken ? csrfToken.content : '',
+                'Accept': 'application/json'  // TAMBAHKAN INI
+            },
+            body: JSON.stringify({
+                items: items,
+                payment_method: paymentMethod,
+                amount_paid: this.totalBayar
+            })
+        });
+        
+        // CEK APAKAH RESPONSE BENAR-BENAR JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const textResponse = await response.text();
+            console.error('Response bukan JSON:', textResponse);
+            alert('Server error: Response tidak valid. Cek console untuk detail.');
             return;
         }
-        this.kembalian = this.totalBayar - total;
-        this.showSuccess = true;
-    },
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            this.showSuccess = true;
+            this.products = this.products.map(p => {
+                const cartItem = this.cartItems.find(ci => ci.id === p.id);
+                if (cartItem) {
+                    return { ...p, qty: p.qty - cartItem.quantity };
+                }
+                return p;
+            });
+        } else {
+            alert('Transaksi gagal: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error detail:', error);
+        alert('Terjadi kesalahan: ' + error.message);
+    }
+},
         formatRupiah(amount) {
             return new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
@@ -141,11 +194,12 @@
         successClearTransaction(){
           this.cartItems = [];
           this.modal = '';
-        },
+          this.totalBayar = 0;
+          this.kembalian = 0;
+        }
 
     }" class="max-w-7xl mx-auto px-6 py-8">
 
-    <!-- Tab Navigation -->
     <!-- Tab Navigation -->
     <div class="flex border-b border-gray-200 mb-6">
       <button @click="tab = 'produk'" :class="tab === 'produk' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'"
@@ -379,8 +433,8 @@
                 <th class="py-3 px-4 font-medium">Aksi</th>
               </tr>
             </thead>
-            @foreach($products as $data)
             <tbody>
+            @foreach($products as $data)
               <tr class="border-b border-gray-100">
                 <td class="py-3 px-4">{{$data->kode_supplier}}</td>
                 <td class="py-3 px-4">{{$data->nama_supplier}}</td>
@@ -391,7 +445,7 @@
                   Aktif
                   </span>
                   @else
-                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                    <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
                   Tidak Aktif
                   </span>
                   @endif
@@ -406,8 +460,8 @@
                   </div>
                 </td>
               </tr>
-            </tbody>
             @endforeach
+            </tbody>
           </table>
         </div>
       </div>
@@ -426,16 +480,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Produk A</td>
-              <td>50</td>
-              <td><input type="number" class="border rounded px-2 py-1 w-24"></td>
+            @foreach($products as $product)
+            <tr class="border-b">
+              <td class="py-2">{{$product->nama}}</td>
+              <td class="py-2">{{$product->qty}}</td>
+              <td class="py-2"><input type="number" class="border rounded px-2 py-1 w-24" value="{{$product->qty}}"></td>
             </tr>
-            <tr>
-              <td>Produk B</td>
-              <td>20</td>
-              <td><input type="number" class="border rounded px-2 py-1 w-24"></td>
-            </tr>
+            @endforeach
           </tbody>
         </table>
       </div>
@@ -448,7 +499,7 @@
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-lg w-full p-6 relative" 
              :class="modal === 'cariProduk' ? 'max-w-4xl' : 'max-w-md'">
-          <button @click="modal = ''" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">&times;</button>
+          <button @click="modal = ''" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
 
           <!-- Modal: Cari Produk -->
           <div x-show="modal === 'cariProduk'" class="max-w-4xl">
@@ -456,13 +507,12 @@
             
             <!-- Search Input -->
             <div class="mb-4">
-            <input 
-  type="text" 
-  x-model="searchQuery"
-  placeholder="Cari produk..." 
-  class="border p-2 w-full rounded"
-/>
-
+              <input 
+                type="text" 
+                x-model="searchQuery"
+                placeholder="Cari produk..." 
+                class="border p-2 w-full rounded"
+              />
             </div>
 
             <!-- Product Table -->
@@ -478,19 +528,18 @@
                 </thead>
                 <tbody>
                   <!-- Loop filtered products -->
-         <template x-for="product in searchResults" :key="product.id">
-  <tr class="border-b">
-    <td class="py-2 px-4" x-text="product.nama"></td>
-    <td class="py-2 px-4" x-text="formatRupiah(product.price)"></td>
-    <td class="py-2 px-4" x-text="product.qty"></td>
-    <td class="py-2 px-4 text-center">
-      <button @click="addToCart(product)" class="bg-blue-500 text-white px-2 py-1 rounded">
-        Tambah
-      </button>
-    </td>
-  </tr>
-</template>
-
+                  <template x-for="product in searchResults" :key="product.id">
+                    <tr class="border-b">
+                      <td class="py-2 px-4" x-text="product.nama"></td>
+                      <td class="py-2 px-4" x-text="formatRupiah(product.price)"></td>
+                      <td class="py-2 px-4" x-text="product.qty"></td>
+                      <td class="py-2 px-4 text-center">
+                        <button @click="addToCart(product)" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                          Tambah
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
                   
                   <!-- No results message -->
                   <tr x-show="searchResults.length === 0">
@@ -519,16 +568,6 @@
             </div>
           </div>
 
-          <!-- Modal: Batalkan Transaksi -->
-          <div x-show="modal === 'batalTransaksi'">
-            <h3 class="text-xl font-bold mb-4">Batalkan Transaksi</h3>
-            <p class="mb-4">Apakah Anda yakin ingin membatalkan transaksi ini?</p>
-            <div class="flex justify-end space-x-2">
-              <button @click="modal = ''" class="px-4 py-2 bg-gray-300 rounded">Tidak</button>
-              <button class="px-4 py-2 bg-red-600 text-white rounded">Ya, Batalkan</button>
-            </div>
-          </div>
-
           <!-- Modal: Pembayaran -->
           <div x-show="modal === 'pembayaran'">
             <h3 class="text-xl font-bold mb-4">Pembayaran</h3>
@@ -551,66 +590,65 @@
             <div class="space-y-4">
               <div>
                 <label class="block mb-2 font-medium">Metode Pembayaran</label>
-                <select class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
-                  <option>Cash</option>
-                  <option>QRIS (integrasi API payment gateway)</option>
-                  <option>Debit Card (integrasi API payment gateway)</option>
-                  <option>Credit Card (integrasi API payment gateway)</option>
+                <select name="payment_method" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
+                  <option value="Cash">Cash</option>
+                  <option value="QRIS">QRIS (integrasi API payment gateway)</option>
+                  <option value="Debit Card">Debit Card (integrasi API payment gateway)</option>
+                  <option value="Credit Card">Credit Card (integrasi API payment gateway)</option>
                 </select>
               </div>
               
-             <div>
-              <label class="block mb-2 font-medium">Jumlah Bayar</label>
-              <input type="number" 
-                     x-model="totalBayar" 
-                     :placeholder="'Minimal: ' + formatRupiah(getTotal())" 
-                     class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
+              <div>
+                <label class="block mb-2 font-medium">Jumlah Bayar</label>
+                <input type="number" 
+                       x-model="totalBayar" 
+                       :placeholder="'Minimal: ' + formatRupiah(getTotal())" 
+                       class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
               </div>
               
               <div class="flex justify-end space-x-2 pt-4">
                 <button @click="modal = ''" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                   Batal
                 </button>
-               <button @click="prosesPembayaran()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                Proses Pembayaran
-              </button>
+                <button @click="prosesPembayaran()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                  Proses Pembayaran
+                </button>
               </div>
-<!-- Popup Sukses -->
-<div 
-  x-show="showSuccess" 
-  x-transition 
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
-    
-    <!-- Icon centang -->
-    <div class="flex justify-center mb-4">
-      <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-    </div>
-
-    <h2 class="text-xl font-bold mb-2">Pembayaran Berhasil!</h2>
-    <div class="text-gray-700 text-sm text-left space-y-1 mb-4">
-      <p><span class="font-medium">Total Harga:</span> <span x-text="formatRupiah(getTotal())"></span></p>
-      <p><span class="font-medium">Jumlah Bayar:</span> <span x-text="formatRupiah(totalBayar)"></span></p>
-      <p><span class="font-medium">Kembalian:</span> <span x-text="formatRupiah(kembalian)"></span></p>
-    </div>
-
-    <button 
-      @click="showSuccess = false; modal = ''; successClearTransaction()" 
-      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-      Tutup
-    </button>
-     <button 
-  
-      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-      Cetak Struk
-    </button>
-  </div>
-</div>
-
-</div>
             </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Popup Sukses -->
+    <template x-if="showSuccess">
+      <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
+          
+          <!-- Icon centang -->
+          <div class="flex justify-center mb-4">
+            <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+
+          <h2 class="text-xl font-bold mb-2">Pembayaran Berhasil!</h2>
+          <div class="text-gray-700 text-sm text-left space-y-1 mb-4">
+            <p><span class="font-medium">Total Harga:</span> <span x-text="formatRupiah(getTotal())"></span></p>
+            <p><span class="font-medium">Jumlah Bayar:</span> <span x-text="formatRupiah(totalBayar)"></span></p>
+            <p><span class="font-medium">Kembalian:</span> <span x-text="formatRupiah(kembalian)"></span></p>
+          </div>
+
+          <div class="flex gap-2 justify-center">
+            <button 
+              @click="showSuccess = false; modal = ''; successClearTransaction()" 
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+              Tutup
+            </button>
+            <button 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              Cetak Struk
+            </button>
           </div>
         </div>
       </div>

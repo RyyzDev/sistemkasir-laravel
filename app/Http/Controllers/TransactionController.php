@@ -13,6 +13,10 @@ class TransactionController extends Controller
 {
     public function store(Request $request)
     {
+         if (!$request->expectsJson()) {
+        return response()->json(['error' => 'Request must be JSON'], 400);
+    }
+        
         $request->validate([
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:suppliers,id',

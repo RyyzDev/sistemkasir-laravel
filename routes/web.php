@@ -5,6 +5,7 @@ use App\Http\Controllers\loginController;
 use App\Http\Controllers\registerController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TransactionController;
 
 
 Route::get('/', [loginController::class, 'index']);
@@ -30,6 +31,8 @@ Route::post('/suppliers', [SupplierController::class, 'store']);
 Route::delete('/destroy/{id}', [SupplierController::class, 'destroy'])->name('products.destroy');
 Route::post('/login', [loginController::class, 'authenticate']);
 Route::post('/logout', [loginController::class, 'logout']);
+
+Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 
 // routes/web.php atau routes/api.php
 Route::middleware(['auth'])->group(function () {
