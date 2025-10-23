@@ -5,24 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Products extends Model
 {
     use HasFactory;
 
     // Kolom yang bisa diisi mass assignment
     protected $fillable = [
-        'name',
+        'nama_produk',
+        'kode_produk',
         'description', 
         'price',
-        'stock',
+        'qty',
         'category',
-        'is_active'
+      //  'status'
     ];
 
     // Cast tipe data
     protected $casts = [
         'price' => 'decimal:2',
-        'is_active' => 'boolean',
+     //   'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -39,10 +40,8 @@ class Product extends Model
     }
 
     // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
+    public function scopeActive($query){ return $query->where
+    ('is_active', true); }
 
     public function scopeInStock($query)
     {

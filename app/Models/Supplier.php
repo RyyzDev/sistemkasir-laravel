@@ -15,9 +15,9 @@ class Supplier extends Model
         'kontak',
         'email',
         'alamat',
-        'nama',
-        'qty',
-        'price',
+        // 'nama',
+        // 'qty',
+        // 'price',
         //'deskripsi',
         'status'
     ];

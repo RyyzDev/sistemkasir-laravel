@@ -15,9 +15,9 @@ class SupplierController extends Controller
             'kontak' => 'nullable|max:20',
             'email' => 'nullable|email',
             'alamat' => 'nullable',
-            'nama' => 'required|max:100|unique:suppliers',
-            'qty' => 'required|max:100',
-            'price' => 'required',
+            // 'nama' => 'required|max:100|unique:suppliers',
+            // 'qty' => 'required|max:100',
+            // 'price' => 'required',
             //'deskripsi' => 'nullable|array',
             'status' => 'boolean'
         ]);
@@ -33,9 +33,9 @@ class SupplierController extends Controller
             'kontak' => $request->kontak,
             'email' => $request->email,
             'alamat' => $request->alamat,
-            'nama' => $request->nama,
-            'qty' => $request->qty,
-            'price'=>$request->price,
+            // 'nama' => $request->nama,
+            // 'qty' => $request->qty,
+            // 'price'=>$request->price,
             // 'deskripsi' => $deskripsi,
             'status' => $request->status ?? 1
         ]);
@@ -47,7 +47,7 @@ class SupplierController extends Controller
        $hapus = Supplier::findOrFail($id);
        $hapus->delete();
 
-       return redirect()->route('dashboard')->with('success', 'Berhasil dihapus'); 
+       return redirect()->route('pos')->with('success', 'Berhasil dihapus'); 
     }
 
 

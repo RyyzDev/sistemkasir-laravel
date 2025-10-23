@@ -15,9 +15,9 @@ return new class extends Migration
             $table->string('kontak')->nullable();
             $table->string('email')->nullable();
             $table->text('alamat')->nullable();
-            $table->string('nama') ->unique();
-            $table->integer('qty');
-            $table->integer('price');
+           // $table->string('nama') ->unique();
+           // $table->integer('qty');
+           // $table->integer('price');
            // $table->json('deskripsi')->nullable(); // JSON untuk array deskripsi
             $table->boolean('status')->default(1);
             $table->timestamps();

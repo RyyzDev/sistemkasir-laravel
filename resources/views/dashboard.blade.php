@@ -1,31 +1,40 @@
-<!DOCTYPE html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Dashboard Sistem Kasir</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="//unpkg.com/alpinejs" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    <script type="module" src="https://unpkg.com/heroicons@2.1.1/dist/solid.js"></script>
+    <script type="module" src="https://unpkg.com/heroicons@2.1.1/dist/outline.js"></script>
+
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+<body 
+    x-data="{ 
+        activeTab: 'dashboard', 
+        showProdukModal: false, 
+        isEditMode: false,
+        showGajiModal: false,
+        showSupplierModal: false,
+        showKaryawanModal: false 
+    }"
+>
 
-  <!-- Navbar -->
-  <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
-    <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-      <h1 class="text-xl font-bold">  &copy;  RyyzDev | Sistem Kasir</h1>
-      <nav class="space-x-6">
-        <a href="#" class="hover:text-indigo-200">Home</a>
-        <a href="#" class="hover:text-indigo-200">Laporan</a>
-        <form action="/logout" method="POST" style="display: inline;">
-          @csrf
-          <button type="submit" class="hover:text-indigo-200">Logout</button>
-        </form>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Flash Messages -->
-  @if(session('success'))
+@include('components.poscomponents.logicfunction')
+<!-- @if(session('success'))
       <div class="max-w-7xl mx-auto px-6 pt-4">
           <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
               {{ session('success') }}
@@ -34,625 +43,509 @@
   @endif
 
   @if(session('error'))
-      <div class="max-w-7xl mx-auto px-6 pt-4">
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {{ session('error') }}
           </div>
       </div>
-  @endif
+  @endif -->
 
-  <!-- User Info -->
-  <div class="max-w-7xl mx-auto px-6 pt-4">
-      @auth
-          <div class="bg-blue-50 border border-blue-200 px-4 py-2 rounded mb-4">
-              <p class="text-sm">Welcome, <strong>{{ Auth::user()->name }}</strong> | {{ Auth::user()->email }}</p>
-          </div>
-      @else
-          <div class="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded mb-4">
-              <p>Please <a href="/login" class="text-blue-600 underline">login</a> first.</p>
-          </div>
-      @endauth
-  </div>
+    <div class="app-container w-[95%] h-[95vh] max-w-screen-2xl mx-auto flex">
+        <nav class="w-64 bg-gray-900 text-white flex-shrink-0 p-4 flex flex-col">
+            <div class="text-center p-4 mb-4">
+                <h1 class="text-2xl font-bold gradient-text">Management App</h1>
+            </div>
 
-  <!-- Tabs -->
-  <main x-data="{
-        tab: 'produk',
-        cartItems: [],
-        modal: '',
-        searchQuery: '',
-        showSuccess: false,
-        totalBayar: 0,
-        kembalian: 0,
-        products: {{ Js::from($products) }},
-        deskripsi: [''],
+            <ul class="flex flex-col gap-2">
+                <li>
+                    <a @click="activeTab = 'dashboard'"
+                       :class="{ 'active': activeTab === 'dashboard' }"
+                       class="menu-item flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3V6ZM3 15.75a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2.25Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25Z" clip-rule="evenodd" /></svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a @click="activeTab = 'produk'"
+                       :class="{ 'active': activeTab === 'produk' }"
+                       class="menu-item flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a.375.375 0 0 1-.375-.375V6.375A3.75 3.75 0 0 0 10.5 2.625H8.625a.375.375 0 0 1-.375-.375V1.5H5.625ZM12 9.375A.375.375 0 0 0 11.625 9H9.375A.375.375 0 0 0 9 9.375v2.25c0 .207.168.375.375.375h2.25A.375.375 0 0 0 12 11.625v-2.25Z" /><path d="M14.25 1.5c.207 0 .375.168.375.375v2.25A3.75 3.75 0 0 0 18.375 7.875h2.25A.375.375 0 0 0 21 7.5V5.625c0-1.036-.84-1.875-1.875-1.875h-2.25a.375.375 0 0 1-.375-.375V1.5h-2.25Z" /></svg>
+                        Produk
+                    </a>
+                </li>
+                <li>
+                    <a @click="activeTab = 'supplier'"
+                       :class="{ 'active': activeTab === 'supplier' }"
+                       class="menu-item flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v11.25a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V6.375Z" /><path fill-rule="evenodd" d="M20.25 2.25A.75.75 0 0 0 19.5 3v1.125a.75.75 0 0 0 .75.75h1.5a.75.75 0 0 0 .75-.75V3a.75.75 0 0 0-.75-.75h-1.5ZM2.25 4.875a.75.75 0 0 0-.75.75v11.25c0 .414.336.75.75.75h.001a.75.75 0 0 0 .75-.75V5.625a.75.75 0 0 0-.75-.75H2.25ZM19.5 19.875v1.125a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V19.875c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75Z" clip-rule="evenodd" /></svg>
+                        Supplier
+                    </a>
+                </li>
+                <li>
+                    <a @click="activeTab = 'karyawan'"
+                       :class="{ 'active': activeTab === 'karyawan' }"
+                       class="menu-item flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75ZM4.5 9.75a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75c0 .414-.336.75-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75ZM15 12a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75ZM4.5 12a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75c0 .414-.336.75-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75ZM12 15a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75Z" clip-rule="evenodd" /><path d="M3 18.75a.75.75 0 0 0-1.5 0v.75c0 1.12 1.006 2.03 2.25 2.03h15c1.244 0 2.25-1.031 2.25-2.28v-.51a.75.75 0 0 0-1.5 0v.51c0 .323-.323.57-.75.57h-15c-.427 0-.75-.247-.75-.57v-.75Z" /></svg>
+                        Karyawan
+                    </a>
+                </li>
+                <li>
+                    <a @click="activeTab = 'invoice'"
+                       :class="{ 'active': activeTab === 'invoice' }"
+                       class="menu-item flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v11.25C1.5 17.16 2.34 18 3.375 18h9.75v1.5H6A.75.75 0 0 0 6 21h12a.75.75 0 0 0 0-1.5h-7.125v-1.5h9.75c1.036 0 1.875-.84 1.875-1.875V4.875C22.5 3.839 21.66 3 20.625 3H3.375Z" /><path d="M9 9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H9Z" /></svg>
+                        Invoice
+                    </a>
+                </li>
+            </ul>
 
-        get searchResults() {
-            if (this.searchQuery === '') {
-                return this.products;
-            }
-            return this.products.filter(p => 
-                p.nama.toLowerCase().includes(this.searchQuery.toLowerCase())
-            );
-        },
-        addToCart(product) {
-            const existingItem = this.cartItems.find(item => item.id === product.id);
-            if (existingItem) {
-                if (existingItem.quantity < product.qty) {
-                    existingItem.quantity += 1;
-                    existingItem.subtotal = existingItem.quantity * existingItem.price;
-                } else {
-                    alert('Quantity melebihi stok yang tersedia!');
-                    return;
-                }
-            } else {
-                this.cartItems.push({
-                    id: product.id,
-                    nama: product.nama,
-                    kode: product.kode,
-                    price: product.price,
-                    quantity: 1,
-                    subtotal: product.price,
-                    maxStock: product.qty
-                });
-            }
+            <div class="mt-auto">
+                 <form action="/logout" method="post" class="menu-item flex items-center gap-3 bg-red-600/20 text-red-300 hover:bg-red-500 hover:text-white">
+                    @csrf
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </nav>
 
-            this.modal = '';
-        },
-        updateQuantity(itemId, newQty) {
-            const item = this.cartItems.find(i => i.id === itemId);
-            if (item) {
-                if (newQty <= 0) {
-                    this.removeFromCart(itemId);
-                } else if (newQty <= item.maxStock) {
-                    item.quantity = parseInt(newQty);
-                    item.subtotal = item.quantity * item.price;
-                } else {
-                    alert('Quantity melebihi stok yang tersedia!');
-                }
-            }
-        },
-        removeFromCart(itemId) {
-            this.cartItems = this.cartItems.filter(item => item.id !== itemId);
-        },
-        getTotal() {
-            return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
-        },
-        async prosesPembayaran() {
-    const total = this.getTotal();
-    if (this.totalBayar < total) {
-        alert('Jumlah bayar kurang dari total!');
-        return;
-    }
-    this.kembalian = this.totalBayar - total;
-    
-    const paymentMethodSelect = document.querySelector('select[name=payment_method]');
-    const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'Cash';
-    
-    const items = this.cartItems.map(item => ({
-        id: item.id,
-        quantity: item.quantity
-    }));
-    
-    try {
-        const csrfToken = document.querySelector('meta[name=csrf-token]');
-        const response = await fetch('/transactions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken ? csrfToken.content : '',
-                'Accept': 'application/json'  // TAMBAHKAN INI
-            },
-            body: JSON.stringify({
-                items: items,
-                payment_method: paymentMethod,
-                amount_paid: this.totalBayar
-            })
-        });
-        
-        // CEK APAKAH RESPONSE BENAR-BENAR JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const textResponse = await response.text();
-            console.error('Response bukan JSON:', textResponse);
-            alert('Server error: Response tidak valid. Cek console untuk detail.');
-            return;
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            this.showSuccess = true;
-            this.products = this.products.map(p => {
-                const cartItem = this.cartItems.find(ci => ci.id === p.id);
-                if (cartItem) {
-                    return { ...p, qty: p.qty - cartItem.quantity };
-                }
-                return p;
-            });
-        } else {
-            alert('Transaksi gagal: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Error detail:', error);
-        alert('Terjadi kesalahan: ' + error.message);
-    }
-},
-        formatRupiah(amount) {
-            return new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR', 
-                minimumFractionDigits: 0, 
-                maximumFractionDigits: 0 
-            }).format(amount);
-        },
-        clearTransaction() {
-            if (confirm('Apakah Anda yakin ingin membatalkan semua transaksi?')) {
-                this.cartItems = [];
-                this.modal = '';
-            }
-        },
-        successClearTransaction(){
-          this.cartItems = [];
-          this.modal = '';
-          this.totalBayar = 0;
-          this.kembalian = 0;
-        }
+        <div class="flex-1 flex flex-col overflow-hidden">
 
-    }" class="max-w-7xl mx-auto px-6 py-8">
-
-    <!-- Tab Navigation -->
-    <div class="flex border-b border-gray-200 mb-6">
-      <button @click="tab = 'produk'" :class="tab === 'produk' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'"
-        class="px-4 py-2 font-semibold border-b-2 focus:outline-none">Produk / Transaksi</button>
-      <button @click="tab = 'supplier'" :class="tab === 'supplier' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'"
-        class="px-4 py-2 font-semibold border-b-2 focus:outline-none">Supplier</button>
-      <button @click="tab = 'stock'" :class="tab === 'stock' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'"
-        class="px-4 py-2 font-semibold border-b-2 focus:outline-none">Stock Opname</button>
-    </div>
-
-    <!-- Tab 1: Produk / Transaksi -->
-    <div x-show="tab === 'produk'" class="space-y-6">
-      <h2 class="text-2xl font-bold">Transaksi Baru</h2>
-
-      <!-- Table produk yang dipilih -->
-      <div class="bg-white shadow rounded-lg p-4">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Daftar Produk</h3>
-          <span class="text-sm text-gray-500" x-text="cartItems.length + ' item(s)'"></span>
-        </div>
-        
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b bg-gray-50">
-                <th class="py-3 px-4 font-medium">Produk</th>
-                <th class="py-3 px-4 font-medium">Harga</th>
-                <th class="py-3 px-4 font-medium">Qty</th>
-                <th class="py-3 px-4 font-medium">Subtotal</th>
-                <th class="py-3 px-4 font-medium">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Tampilkan jika cart kosong -->
-              <tr x-show="cartItems.length === 0">
-                <td colspan="5" class="py-8 text-center text-gray-500">
-                  <div class="flex flex-col items-center">
-                    <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                    </svg>
-                    <p>Belum ada produk yang dipilih</p>
-                    <p class="text-xs">Klik "Cari Produk" untuk menambah item</p>
-                  </div>
-                </td>
-              </tr>
-              
-              <!-- Loop cart items -->
-              <template x-for="item in cartItems" :key="item.id">
-                <tr class="border-b border-gray-100">
-                  <td class="py-3 px-4">
-                    <div>
-                      <p class="font-medium" x-text="item.nama"></p>
-                      <p class="text-xs text-gray-500" x-text="'Kode: ' + item.kode"></p>
+            <header class="top-bar p-4 flex justify-between items-center text-white">
+                <h2 class="text-xl font-semibold capitalize" x-text="activeTab"></h2>
+                <div class="flex items-center gap-4">
+                    <input type="text" placeholder="Cari global..." class="input-field bg-gray-700 text-white placeholder-gray-400 px-4 py-2 text-sm">
+                    @auth
+                    <div class="flex items-center gap-2">
+                        <img src="https://i.pravatar.cc/40?img=1" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-indigo-400">
+                        <div>
+                            <div class="font-medium">{{ Auth::user()->name }}</div>
+                            <div class="font-medium">Founder/CEO</div>
+                            <div class="text-xs text-gray-400">{{ Auth::user()->email }}</div>
+                        </div>
                     </div>
-                  </td>
-                  <td class="py-3 px-4" x-text="formatRupiah(item.price)"></td>
-                  <td class="py-3 px-4">
-                    <div class="flex items-center space-x-2">
-                      <button @click="updateQuantity(item.id, item.quantity - 1)" 
-                        class="w-6 h-6 bg-gray-200 rounded text-sm hover:bg-gray-300">−</button>
-                      <input type="number" :value="item.quantity" 
-                        @input="updateQuantity(item.id, $event.target.value)"
-                        class="w-16 text-center border rounded px-1 py-1 text-sm"
-                        min="1" :max="item.maxStock">
-                      <button @click="updateQuantity(item.id, item.quantity + 1)" 
-                        class="w-6 h-6 bg-gray-200 rounded text-sm hover:bg-gray-300">+</button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1" x-text="'Stok: ' + item.maxStock"></p>
-                  </td>
-                  <td class="py-3 px-4 font-semibold" x-text="formatRupiah(item.subtotal)"></td>
-                  <td class="py-3 px-4">
-                    <button @click="removeFromCart(item.id)" 
-                      class="text-red-500 hover:text-red-700 text-sm">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              </template>
-              
-              <!-- Total row -->
-              <tr x-show="cartItems.length > 0" class="border-t-2 border-gray-200 bg-gray-50">
-                <td colspan="3" class="py-3 px-4 font-semibold text-right">TOTAL:</td>
-                <td class="py-3 px-4 font-bold text-lg text-green-600" x-text="formatRupiah(getTotal())"></td>
-                <td class="py-3 px-4"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tombol aksi -->
-      <div class="flex flex-wrap gap-3">
-        <button @click="modal = 'cariProduk'" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 flex items-center">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          Cari Produk
-        </button>
-        <button @click="clearTransaction()" :disabled="cartItems.length === 0"
-          class="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
-          Batalkan Transaksi
-        </button>
-        <button @click="modal = 'pembayaran'" :disabled="cartItems.length === 0"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-          </svg>
-          Lanjut Pembayaran
-        </button>
-      </div>
-    </div>
-
-    <!-- Tab 2: Supplier -->
-    <div x-show="tab === 'supplier'" class="space-y-6">
-      <h2 class="text-2xl font-bold">Tambah Supplier Baru</h2>
-      
-      <!-- Form Tambah Supplier -->
-      <div class="bg-white shadow rounded-lg p-6 space-y-4">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Supplier</h3>
-        
-        <form action="/suppliers" method="POST" class="space-y-4">
-          @csrf
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Nama Supplier *</label>
-              <input type="text" name="nama_supplier" required 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Kode Supplier *</label>
-              <input type="text" name="kode_supplier" required 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Kontak/Telepon</label>
-              <input type="text" name="kontak" 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Email</label>
-              <input type="email" name="email" 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1 text-gray-700">Alamat</label>
-            <textarea name="alamat" rows="2" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-          </div>
-       <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Produk</h3>
-          <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Nama Produk *</label>
-              <input type="text" name="nama" required 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Price *</label>
-              <input type="text" name="price" required 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1 text-gray-700">Quantity *</label>
-              <input type="text" name="qty" required 
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-          </div>
-
-          <!-- Deskripsi Dinamis -->
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <label class="block text-sm font-medium text-gray-700">Deskripsi Produk</label>
-              <button type="button" @click="deskripsi.push('')" 
-                class="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                + Tambah Deskripsi (masih pengembangan... :)
-              </button>
-            </div>
-            
-            <div class="space-y-2">
-              <template x-for="(desc, index) in deskripsi" :key="index">
-                <div class="flex items-center space-x-2">
-                  <input type="text" :name="'deskripsi[' + index + ']'" x-model="deskripsi[index]"
-                    placeholder="Masukkan deskripsi produk..."
-                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                  
-                  <button type="button" x-show="deskripsi.length > 1" 
-                    @click="deskripsi.splice(index, 1)"
-                    class="text-red-500 hover:text-red-700 px-2 py-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
+                    @endauth
                 </div>
-              </template>
-            </div>
-          </div>
-    
+            </header>
 
-          <div class="flex justify-end space-x-3 pt-4">
-            <button type="reset" 
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-              Reset
-            </button>
-            <button type="submit" 
-              class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500">
-              Simpan Supplier
-            </button>
-          </div>
-        </form>
-      </div>
+            <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
 
-      <!-- Tabel Data Supplier -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Supplier</h3>
-        
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-gray-200 bg-gray-50">
-                <th class="py-3 px-4 font-medium">Kode</th>
-                <th class="py-3 px-4 font-medium">Nama Supplier</th>
-                <th class="py-3 px-4 font-medium">Kontak</th>
-                <th class="py-3 px-4 font-medium">Status</th>
-                <th class="py-3 px-4 font-medium">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-            @foreach($products as $data)
-              <tr class="border-b border-gray-100">
-                <td class="py-3 px-4">{{$data->kode_supplier}}</td>
-                <td class="py-3 px-4">{{$data->nama_supplier}}</td>
-                <td class="py-3 px-4">{{$data->kontak}}</td>
-                <td class="py-3 px-4">
-                  @if($data->status == 1)
-                  <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                  Aktif
-                  </span>
-                  @else
-                    <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                  Tidak Aktif
-                  </span>
-                  @endif
-                </td>
-                <td class="py-3 px-4">
-                  <div class="flex space-x-2">
-                    <form action="{{route('products.destroy', $data->id)}}" method="POST" onsubmit="return confirm('Yakin Mau Menghapus?')">
-                      @method('delete')
-                      @csrf
-                       <button class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
-                  </form>
-                  </div>
-                </td>
-              </tr>
-            @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+                <div x-show="activeTab === 'dashboard'" x-transition.opacity.duration.300ms>
+                    <div class="mb-4">
+                        <select class="input-field">
+                            <option>Bulan Ini</option>
+                            <option>7 Hari Terakhir</option>
+                            <option>Hari Ini</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="card p-6">
+                            <h3 class="text-sm font-medium text-gray-500">Total Penjualan</h3>
+                            <p class="text-3xl font-bold gradient-text">Rp 120.5M</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="text-sm font-medium text-gray-500">Total Transaksi</h3>
+                            <p class="text-3xl font-bold gradient-text">1.480</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="text-sm font-medium text-gray-500">Produk Terlaris</h3>
+                            <p class="text-3xl font-bold gradient-text">Laptop Core i9</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="text-sm font-medium text-gray-500">Pelanggan Baru</h3>
+                            <p class="text-3xl font-bold gradient-text">210</p>
+                        </div>
+                    </div>
 
-    <!-- Tab 3: Stock Opname -->
-    <div x-show="tab === 'stock'" class="space-y-6">
-      <h2 class="text-2xl font-bold">Stock Opname</h2>
-      <div class="bg-white shadow rounded-lg p-6 overflow-x-auto">
-        <table class="w-full text-left">
-          <thead>
-            <tr class="border-b">
-              <th class="py-2">Produk</th>
-              <th class="py-2">Qty Sistem</th>
-              <th class="py-2">Qty Fisik</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach($products as $product)
-            <tr class="border-b">
-              <td class="py-2">{{$product->nama}}</td>
-              <td class="py-2">{{$product->qty}}</td>
-              <td class="py-2"><input type="number" class="border rounded px-2 py-1 w-24" value="{{$product->qty}}"></td>
-            </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-      <button class="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">Simpan Stock Opname</button>
-    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="card lg:col-span-2 p-6">
+                            <h3 class="font-semibold mb-4">Grafik Tren Penjualan (Line) & Per Kategori (Bar)</h3>
+                            <p class="text-center text-gray-400 p-8">
+                                [ Placeholder untuk Grafik Garis & Batang ]<br>
+                                <span class="text-sm">(Membutuhkan library JS seperti Chart.js atau ApexCharts)</span>
+                            </p>
+                            </div>
+                        
+                        <div class="card p-6">
+                            <h3 class="font-semibold mb-4">Metode Pembayaran (Pie)</h3>
+                            <p class="text-center text-gray-400 p-8">
+                                [ Placeholder untuk Grafik Lingkaran ]
+                                </p>
+                        </div>
+                    </div>
 
-    <!-- ================= POPUP MODAL ================= -->
-    <!-- Overlay -->
-    <template x-if="modal !== ''">
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-lg w-full p-6 relative" 
-             :class="modal === 'cariProduk' ? 'max-w-4xl' : 'max-w-md'">
-          <button @click="modal = ''" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+                    <div class="table-container shadow-lg">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left">ID Pesanan</th>
+                                    <th class="p-4 text-left">Pelanggan</th>
+                                    <th class="p-4 text-left">Total</th>
+                                    <th class="p-4 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-4">ORD-001</td>
+                                    <td class="p-4">PT. Maju Mundur</td>
+                                    <td class="p-4">Rp 15.000.000</td>
+                                    <td class="p-4"><span class="badge bg-green-100 text-green-700">Lunas</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4">ORD-002</td>
+                                    <td class="p-4">CV. Sinar Jaya</td>
+                                    <td class="p-4">Rp 5.200.000</td>
+                                    <td class="p-4"><span class="badge bg-yellow-100 text-yellow-700">Pending</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-          <!-- Modal: Cari Produk -->
-          <div x-show="modal === 'cariProduk'" class="max-w-4xl">
-            <h3 class="text-xl font-bold mb-4 text-center">Cari Produk</h3>
-            
-            <!-- Search Input -->
-            <div class="mb-4">
-              <input 
-                type="text" 
-                x-model="searchQuery"
-                placeholder="Cari produk..." 
-                class="border p-2 w-full rounded"
-              />
-            </div>
-
-            <!-- Product Table -->
-            <div class="max-h-80 overflow-y-auto border border-gray-200 rounded-lg">
-              <table class="w-full text-left text-sm">
-                <thead class="sticky top-0 bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th class="py-3 px-4 font-medium text-gray-700">Nama Produk</th>
-                    <th class="py-3 px-4 font-medium text-gray-700">Harga</th>
-                    <th class="py-3 px-4 font-medium text-gray-700">Stok</th>
-                    <th class="py-3 px-4 font-medium text-gray-700 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Loop filtered products -->
-                  <template x-for="product in searchResults" :key="product.id">
-                    <tr class="border-b">
-                      <td class="py-2 px-4" x-text="product.nama"></td>
-                      <td class="py-2 px-4" x-text="formatRupiah(product.price)"></td>
-                      <td class="py-2 px-4" x-text="product.qty"></td>
-                      <td class="py-2 px-4 text-center">
-                        <button @click="addToCart(product)" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
-                          Tambah
+                <div x-show="activeTab === 'produk'" x-transition.opacity.duration.300ms>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">Manajemen Produk</h2>
+                        <button @click="showProdukModal = true; isEditMode = false;" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+                            Tambah Produk
                         </button>
-                      </td>
-                    </tr>
-                  </template>
-                  
-                  <!-- No results message -->
-                  <tr x-show="searchResults.length === 0">
-                    <td colspan="4" class="py-8 text-center text-gray-500">
-                      <div class="flex flex-col items-center">
-                        <svg class="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <p>Produk tidak ditemukan</p>
-                        <p class="text-xs">Coba kata kunci yang berbeda</p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                    </div>
 
-            <!-- Footer Actions -->
-            <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-              <p class="text-sm text-gray-600" x-text="'Menampilkan ' + searchResults.length + ' produk'"></p>
-              <div class="flex space-x-2">
-                <button @click="modal = ''; searchQuery = ''" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Modal: Pembayaran -->
-          <div x-show="modal === 'pembayaran'">
-            <h3 class="text-xl font-bold mb-4">Pembayaran</h3>
-            
-            <!-- Summary transaksi -->
-            <div class="bg-gray-50 p-4 rounded-lg mb-4">
-              <h4 class="font-semibold mb-2">Ringkasan Transaksi</h4>
-              <div class="space-y-1 text-sm">
-                <div class="flex justify-between">
-                  <span>Total Item:</span>
-                  <span x-text="cartItems.reduce((sum, item) => sum + item.quantity, 0) + ' pcs'"></span>
+                    <div class="table-container shadow-lg">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left">SKU</th>
+                                    <th class="p-4 text-left">Nama Produk</th>
+                                    <th class="p-4 text-left">Harga</th>
+                                    <th class="p-4 text-left">Stok</th>
+                                    <th class="p-4 text-left">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                    @foreach($products as $produk)
+                                    <th class="p-4">{{$produk->kode_produk}}</th>
+                                    <th class="p-4">{{$produk->nama_produk}}</th>
+                                    <th class="p-4">{{$produk->price}}</th>
+                                    <th class="p-4">{{$produk->qty}}</th>
+                                    <td class="p-4 flex gap-2">
+                                        <button @click="showProdukModal = true; isEditMode = true;" class="action-btn bg-yellow-500 hover:bg-yellow-600 text-white p-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" /></svg>
+                                        </button>
+                                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white p-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                        @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>Total Pembayaran:</span>
-                  <span x-text="formatRupiah(getTotal())" class="text-green-600"></span>
+
+                <div x-show="activeTab === 'supplier'" x-transition.opacity.duration.300ms>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">Manajemen Supplier</h2>
+                        <button @click="showSupplierModal = true" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+                            Tambah Supplier
+                        </button>
+                    </div>
+
+
+                    <div class="table-container shadow-lg">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left">Nama Supplier</th>
+                                    <th class="p-4 text-left">Kode Supplier</th>
+                                    <th class="p-4 text-left">Email</th>
+                                    <th class="p-4 text-left">Telepon</th>
+                                    <th class="p-4 text-left">Aksi</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                            @foreach($products as $data)
+                                <tr>
+                                    <td class="p-4">{{$data->nama_supplier}}</td>
+                                    <td class="p-4">{{$data->kode_supplier}}</td>
+                                    <td class="p-4">{{$data->email}}</td>
+                                    <td class="p-4">{{$data->kontak}}</td>
+                                    <td class="p-4 flex gap-2">
+                                        <button @click="showSupplierModal = true" class="action-btn bg-yellow-500 hover:bg-yellow-600 text-white p-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" /></svg>
+                                        </button>
+                                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white p-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-              </div>
-            </div>
-            
-            <div class="space-y-4">
-              <div>
-                <label class="block mb-2 font-medium">Metode Pembayaran</label>
-                <select name="payment_method" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
-                  <option value="Cash">Cash</option>
-                  <option value="QRIS">QRIS (integrasi API payment gateway)</option>
-                  <option value="Debit Card">Debit Card (integrasi API payment gateway)</option>
-                  <option value="Credit Card">Credit Card (integrasi API payment gateway)</option>
-                </select>
-              </div>
-              
-              <div>
-                <label class="block mb-2 font-medium">Jumlah Bayar</label>
-                <input type="number" 
-                       x-model="totalBayar" 
-                       :placeholder="'Minimal: ' + formatRupiah(getTotal())" 
-                       class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
-              </div>
-              
-              <div class="flex justify-end space-x-2 pt-4">
-                <button @click="modal = ''" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  Batal
-                </button>
-                <button @click="prosesPembayaran()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                  Proses Pembayaran
-                </button>
-              </div>
-            </div>
-          </div>
+
+                <div x-show="activeTab === 'karyawan'" x-transition.opacity.duration.300ms>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">Manajemen Karyawan</h2>
+                        <button @click="showKaryawanModal = true" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+                            Tambah Karyawan
+                        </button>
+                    </div>
+
+                    <div class="table-container shadow-lg">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left">Nama</th>
+                                    <th class="p-4 text-left">Posisi</th>
+                                    <th class="p-4 text-left">Email</th>
+                                    <th class="p-4 text-left">Status</th>
+                                    <th class="p-4 text-left">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($person as $karyawan)
+                                <tr>
+                                    <td class="p-4">{{$karyawan->name}}</td>
+                                    <td class="p-4">{{$karyawan->role}}</td>
+                                    <td class="p-4">{{$karyawan->email}}</td>
+                                    <td class="p-4"><span class="status-badge status-active">Aktif</span></td>
+                                    <td class="p-4 flex gap-2">
+                                        <button @click="showGajiModal = true" class="action-btn bg-green-500 hover:bg-green-600 text-white p-2" title="Proses Gaji">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.25a.75.75 0 0 1-1.5 0V5H2v1.25a.75.75 0 0 1-1.5 0V4ZM2.5 8.5A.75.75 0 0 1 3.25 8h13.5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-.75.75H3.25a.75.75 0 0 1-.75-.75v-6.5ZM3 9.25v5.5h14v-5.5H3Z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white p-2" title="Hapus Karyawan">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'invoice'" x-transition.opacity.duration.300ms>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold">Cetak Invoice</h2>
+                    </div>
+
+                    <div class="table-container shadow-lg">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="p-4 text-left">ID Pesanan</th>
+                                    <th class="p-4 text-left">Pelanggan</th>
+                                    <th class="p-4 text-left">Tanggal</th>
+                                    <th class="p-4 text-left">Total</th>
+                                    <th class="p-4 text-left">Status Bayar</th>
+                                    <th class="p-4 text-left">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-4">ORD-001</td>
+                                    <td class="p-4">PT. Maju Mundur</td>
+                                    <td class="p-4">18 Okt 2025</td>
+                                    <td class="p-4">Rp 15.000.000</td>
+                                    <td class="p-4"><span class="badge bg-green-100 text-green-700">Lunas</span></td>
+                                    <td class="p-4">
+                                        <button class="action-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M5 2.5a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 .75.75v.5h1.75a3 3 0 0 1 3 3v9.5a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h1.75v-.5A.75.75 0 0 1 5 2.5ZM4.5 6a1.5 1.5 0 0 0-1.5 1.5v9.5a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V7.5a1.5 1.5 0 0 0-1.5-1.5H4.5Z" clip-rule="evenodd" /></svg>
+                            Cetak
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4">ORD-002</td>
+                                    <td class="p-4">CV. Sinar Jaya</td>
+                                    <td class="p-4">17 Okt 2025</td>
+                                    <td class="p-4">Rp 5.200.000</td>
+                                    <td class="p-4"><span class="badge bg-yellow-100 text-yellow-700">Pending</span></td>
+                                    <td class="p-4">
+                                        <button class="action-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M5 2.5a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 .75.75v.5h1.75a3 3 0 0 1 3 3v9.5a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h1.75v-.5A.75.75 0 0 1 5 2.5ZM4.5 6a1.5 1.5 0 0 0-1.5 1.5v9.5a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V7.5a1.5 1.5 0 0 0-1.5-1.5H4.5Z" clip-rule="evenodd" /></svg>
+                                            Cetak
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
         </div>
-      </div>
-    </template>
+    </div>
 
-    <!-- Popup Sukses -->
-    <template x-if="showSuccess">
-      <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
-          
-          <!-- Icon centang -->
-          <div class="flex justify-center mb-4">
-            <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-
-          <h2 class="text-xl font-bold mb-2">Pembayaran Berhasil!</h2>
-          <div class="text-gray-700 text-sm text-left space-y-1 mb-4">
-            <p><span class="font-medium">Total Harga:</span> <span x-text="formatRupiah(getTotal())"></span></p>
-            <p><span class="font-medium">Jumlah Bayar:</span> <span x-text="formatRupiah(totalBayar)"></span></p>
-            <p><span class="font-medium">Kembalian:</span> <span x-text="formatRupiah(kembalian)"></span></p>
-          </div>
-
-          <div class="flex gap-2 justify-center">
-            <button 
-              @click="showSuccess = false; modal = ''; successClearTransaction()" 
-              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-              Tutup
-            </button>
-            <button 
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              Cetak Struk
-            </button>
-          </div>
+    <div x-show="showProdukModal" @keydown.escape.window="showProdukModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
+        <div @click.outside="showProdukModal = false" class="modal-content bg-white w-full max-w-lg p-8 shadow-xl">
+            <h2 class="text-2xl font-semibold mb-6 gradient-text" x-text="isEditMode ? 'Edit Produk' : 'Tambah Produk Baru'"></h2>
+            <form action="/productregister" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Produk</label>
+                    <input type="text" name="nama_produk" class="input-field w-full mt-1 p-3" placeholder="Misal: Laptop Core i9">
+                </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">SKU</label>
+                        <input type="text" name="kode_produk" class="input-field w-full mt-1 p-3" placeholder="LP-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                        <input type="text" name="description" class="input-field w-full mt-1 p-3" placeholder="Misal: Laptop Core i9">
+                    </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Harga Jual</label>
+                        <input type="number" name="price" class="input-field w-full mt-1 p-3" placeholder="25000000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">QTY</label>
+                        <input type="number" name="qty" class="input-field w-full mt-1 p-3" placeholder="50">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button @click="showProdukModal = false" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
+                        Batal
+                    </button>
+                    <button type="submit" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2">
+                        Simpan
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
-    </template>
-  </main>
+    </div>
+
+    <div x-show="showSupplierModal" @keydown.escape.window="showSupplierModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
+        <div @click.outside="showSupplierModal = false" class="modal-content bg-white w-full max-w-lg p-8 shadow-xl">
+            <h2 class="text-2xl font-semibold mb-6 gradient-text" x-text="isEditMode ? '' : 'Tambah Supplier Baru'"></h2>
+
+            <form action="/suppliers" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Supplier</label>
+                    <input name="nama_supplier" type="text" class="input-field w-full mt-1 p-3" placeholder="PT. Global Teguh Indonesia">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kode Supplier</label>
+                        <input name="kode_supplier" type="text" class="input-field w-full mt-1 p-3" placeholder="LP-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                        <input name="email" type="email" class="input-field w-full mt-1 p-3" placeholder="fachri@fachri.com">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Kontak</label>
+                    <input name="kontak" type="text" class="input-field w-full mt-1 p-3" placeholder="0851897287">
+                </div>
+                <div>
+                    <textarea name="alamat"></textarea>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button @click="showSupplierModal = false" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
+                        Batal
+                    </button>
+                    <button type="submit" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="showKaryawanModal" @keydown.escape.window="showKaryawanModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
+        <div @click.outside="showKaryawanModal = false" class="modal-content bg-white w-full max-w-lg p-8 shadow-xl">
+            <h2 class="text-2xl font-semibold mb-6 gradient-text" x-text="isEditMode ? 'Edit Karyawan' : 'Tambah Karyawan Baru'"></h2>
+            <form action="/register" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Karyawan</label>
+                    <input name="name" type="text" class="input-field w-full mt-1 p-3">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Jabatan
+                    <input type="text" name="role" class="input-field w-full mt-1 p-3">
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" class="input-field w-full mt-1 p-3" placeholder="email@email.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="text" name="password" class="input-field w-full mt-1 p-3" placeholder="50">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button @click="showKaryawanModal = false" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
+                        Batal
+                    </button>
+                    <button type="submit" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="showGajiModal" @keydown.escape.window="showGajiModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
+        <div @click.outside="showGajiModal = false" class="modal-content bg-white w-full max-w-md p-8 shadow-xl">
+            <h2 class="text-2xl font-semibold mb-6 gradient-text">Proses Gaji Karyawan</h2>
+            <form action="#" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Karyawan</label>
+                    <input type="text" class="input-field w-full mt-1 p-3 bg-gray-100" value="Andi Wijaya" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Periode Gaji</label>
+                    <input type="month" class="input-field w-full mt-1 p-3" value="{{ date('Y-m') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Gaji Pokok</label>
+                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="5000000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Bonus/Tunjangan</label>
+                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="500000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Potongan (PPh, dll)</label>
+                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="250000">
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button @click="showGajiModal = false" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
+                        Batal
+                    </button>
+                    <button type="submit" class="action-btn bg-green-600 hover:bg-green-700 text-white px-5 py-2">
+                        Bayar & Buat Slip
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            // Tambahkan animasi keluar
+            preloader.style.animation = 'stretchOut 0.5s ease forwards';
+            // Sembunyikan setelah animasi selesai
+            setTimeout(() => {
+                preloader.style.display = 'none';
+            }, 500);
+        });
+    </script>
+
 </body>
 </html>

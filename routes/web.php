@@ -4,16 +4,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\registerController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PosController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ProductController;
+
 
 
 Route::get('/', [loginController::class, 'index']);
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+Route::get('/pos', [PosController::class, 'index'])->name('pos')->middleware('auth');
 
-Route::get('/laporan', function(){
-    return view('laporan');
-})->middleware('auth');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/cashend', function(){
     return view('cashend');
@@ -27,6 +29,7 @@ Route::get('/register', [registerController::class, 'index'])->middleware('guest
 
 //method post
 Route::post('/register', [registerController::class, 'store']);
+Route::post('/productregister', [ProductController::class, 'store']);
 Route::post('/suppliers', [SupplierController::class, 'store']);
 Route::delete('/destroy/{id}', [SupplierController::class, 'destroy'])->name('products.destroy');
 Route::post('/login', [loginController::class, 'authenticate']);

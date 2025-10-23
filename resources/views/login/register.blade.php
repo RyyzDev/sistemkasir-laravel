@@ -8,16 +8,6 @@
     <link rel="stylesheet" href="{{asset('css/style.css')}}">
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500">
- <div id="preloader">
-    <img src="{{asset('images/fachri.jpg')}}" alt="Logo" id="preloader-img">
-    <h2 class="text-2xl md:text-3xl font-bold text-black">SISTEM KASIR</h2>
-    <h4 class="text-sm text-black-100 mt-1">Tunggu sebentar!</h4>
-    <div class="dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-  </div>
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center">
