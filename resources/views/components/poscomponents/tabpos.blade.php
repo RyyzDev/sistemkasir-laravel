@@ -37,7 +37,7 @@
                       <td class="py-4 px-6">
                         <div>
                           <p class="font-semibold text-gray-800" x-text="item.nama"></p>
-                          <p class="text-xs text-gray-500" x-text="'Kode: ' + item.kode"></p>
+                          <p class="text-xs text-gray-500" x-text="'SKU: ' + item.kode"></p>
                         </div>
                       </td>
                       <td class="py-4 px-6 text-right font-semibold" x-text="formatRupiah(item.price)"></td>
@@ -45,10 +45,10 @@
                         <div class="flex items-center justify-center gap-2">
                           <button @click="updateQuantity(item.id, item.quantity - 1)" class="qty-btn bg-red-100 text-red-600 hover:bg-red-200">−</button>
                           <input type="number" :value="item.quantity" @input="updateQuantity(item.id, $event.target.value)"
-                            class="qty-input" min="1" :max="item.maxStock">
+                            class="quantity-input" min="1" :max="item.maxStock">
                           <button @click="updateQuantity(item.id, item.quantity + 1)" class="qty-btn bg-green-100 text-green-600 hover:bg-green-200">+</button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 text-center" x-text="'Stok: ' + item.maxStock"></p>
+                        <p class="item-center text-xs text-gray-500 mt-2 text-center" x-text="'Stok: ' + item.maxStock"></p>
                       </td>
                       <td class="py-4 px-6 text-right font-bold text-purple-600" x-text="formatRupiah(item.subtotal)"></td>
                       <td class="py-4 px-6 text-center">

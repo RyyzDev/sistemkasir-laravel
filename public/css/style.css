@@ -282,3 +282,47 @@ Titik loading */.dots {
       background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
       color: white;
     }
+
+
+
+    /* ---- PRINT OPTIMIZATION (Untuk Struk Thermal) ---- */
+
+@media print {
+    body {
+        /* Hapus margin agar struk rata */
+        margin: 0 !important;
+        padding: 0 !important;
+        
+        /* Gunakan font monospace agar rapi */
+        font-family: 'monospace', 'Courier New', Courier, monospace !important;
+    }
+
+    /* Sembunyikan semua elemen kecuali area cetak */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Tampilkan hanya modal struk */
+    #printArea, #printArea * {
+        visibility: visible;
+    }
+
+    /* Posisikan area cetak */
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%; /* Atau sesuai lebar kertas thermal Anda */
+        margin: 0;
+        padding: 0;
+        box-shadow: none !important;
+        border: none !important;
+        /* Batasi lebar untuk meniru struk thermal */
+        max-width: 58mm; /* Sesuaikan dengan lebar printer Anda */
+    }
+
+    /* Pastikan tombol tidak ikut tercetak */
+    .print\:hidden {
+        display: none !important;
+    }
+}

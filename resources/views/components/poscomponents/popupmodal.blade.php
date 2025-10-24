@@ -15,6 +15,7 @@
                 <table class="w-full text-sm">
                   <thead>
                     <tr>
+                      <th class="py-3 px-4 text-left font-semibold">SKU</th>
                       <th class="py-3 px-4 text-left font-semibold">Produk</th>
                       <th class="py-3 px-4 text-right font-semibold">Harga</th>
                       <th class="py-3 px-4 text-center font-semibold">Stok</th>
@@ -24,7 +25,8 @@
                   <tbody>
                     <template x-for="product in searchResults" :key="product.id">
                       <tr>
-                        <td class="py-3 px-4 font-semibold text-gray-800" x-text="product.nama"></td>
+                        <td class="py-3 px-4 text-center" x-text="product.kode_produk"></td>
+                        <td class="py-3 px-4 font-semibold text-gray-800" x-text="product.nama_produk"></td>
                         <td class="py-3 px-4 text-right font-semibold text-purple-600" x-text="formatRupiah(product.price)"></td>
                         <td class="py-3 px-4 text-center" x-text="product.qty"></td>
                         <td class="py-3 px-4 text-center">
@@ -103,39 +105,80 @@
 
       <!-- Success Popup -->
       <template x-if="showSuccess">
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="success-popup bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="flex justify-center mb-4">
-              <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center animate-pulse">
-                <span class="text-4xl">✓</span>
-              </div>
-            </div>
-
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Pembayaran Berhasil!</h2>
+    <div class="fixed inset-0 bg-black bg-opacity-70 modal-overlay flex items-center justify-center z-50 p-4">
+        
+        <div class="modal-content bg-white max-w-xs w-full p-4 rounded-lg shadow-2xl relative font-mono text-xs" id="printArea">
             
-            <div class="bg-gray-50 p-6 rounded-lg mb-6 space-y-3 text-left">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Total Harga:</span>
-                <span class="font-bold text-gray-800" x-text="formatRupiah(getTotal())"></span>
-              </div>
-              <div class="flex justify-between text-sm border-t pt-3">
-                <span class="text-gray-600">Jumlah Bayar:</span>
-                <span class="font-bold text-gray-800" x-text="formatRupiah(totalBayar)"></span>
-              </div>
-              <div class="flex justify-between text-sm border-t pt-3">
-                <span class="text-gray-600">Kembalian:</span>
-                <span class="font-bold gradient-text text-lg" x-text="formatRupiah(kembalian)"></span>
-              </div>
+            <h2 class="text-center font-bold text-base mb-1">Ryyz MART</h2>
+            
+            <div class="text-center border-b border-dashed border-gray-400 pb-2 mb-2">
+                <p class="text-[10px]">UIN Syarif Hidayatullah Jakarta</p>
+                <p class="text-[10px]">Telp: 0812-4567-8910</p>
+            </div>
+            
+            <div class="border-b border-dashed border-gray-400 pb-2 mb-2">
+                <div class="flex justify-between">
+                    <span>No. Trans:</span>
+                    <span class="font-semibold">TRX-XXXX</span> </div>
+                <div class="flex justify-between">
+                    <span>Tanggal:</span>
+                    <span x-text="new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Kasir:</span>
+                    <span class="font-semibold">{{ Auth::user()->name ?? 'Kasir Tamu' }}</span>
+                </div>
             </div>
 
-            <div class="flex gap-3">
-              <button @click="showSuccess = false; successClearTransaction()" class="flex-1 action-btn px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
-                ✓ Selesai
-              </button>
-              <button class="flex-1 action-btn px-4 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
-                🖨️ Cetak
-              </button>
+            <div class="space-y-1 border-b border-dashed border-gray-400 pb-2 mb-2">
+                <div class="flex justify-between font-bold">
+                    <span>ITEM</span>
+                    <span>SUBTOTAL</span>
+                </div>
+                <div class="border-t border-dashed border-gray-300 my-1"></div>
+                <template x-for="item in cartItems" :key="item.id">
+                    <div class="text-[11px] leading-tight">
+                        <div class="font-medium" x-text="item.nama"></div>
+                        <div class="flex justify-between pl-2">
+                            <span x-text="item.quantity + ' x ' + formatRupiah(item.price)"></span>
+                            <span x-text="formatRupiah(item.subtotal)"></span>
+                        </div>
+                    </div>
+                </template>
             </div>
-          </div>
+
+            <div class="space-y-1 border-b border-dashed border-gray-400 pb-2 mb-3">
+                <div class="flex justify-between">
+                    <span>TOTAL BELANJA:</span>
+                    <span class="font-bold" x-text="formatRupiah(getTotal())"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span>UANG DITERIMA:</span>
+                    <span class="font-bold" x-text="formatRupiah(totalBayar)"></span>
+                </div>
+                <div class="flex justify-between font-bold text-sm border-t border-dashed pt-1 mt-1">
+                    <span>KEMBALIAN:</span>
+                    <span class="text-green-700" x-text="formatRupiah(kembalian)"></span>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <p class="text-[10px]">TERIMA KASIH ATAS KUNJUNGAN ANDA</p>
+                <p class="text-[10px] mt-1">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</p>
+            </div>
+
+            <div class="mt-4 flex gap-2 print:hidden">
+                <button 
+                    @click="printStruk()" 
+                    class="flex-1 action-btn px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                    🖨️ Cetak
+                </button>
+                <button 
+                    @click="showSuccess = false; successClearTransaction()" 
+                    class="flex-1 action-btn px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors text-sm">
+                    Selesai
+                </button>
+            </div>
         </div>
-      </template>
+    </div>
+</template>

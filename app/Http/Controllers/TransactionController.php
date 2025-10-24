@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
-use App\Models\Supplier;
+use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +19,7 @@ class TransactionController extends Controller
         
         $request->validate([
             'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:suppliers,id',
+            'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'payment_method' => 'required|string',
             'amount_paid' => 'required|numeric|min:0',
@@ -33,7 +33,7 @@ class TransactionController extends Controller
 
             // Validasi stok dan hitung total
             foreach ($request->items as $item) {
-                $product = Supplier::findOrFail($item['id']);
+                $product = Products::findOrFail($item['id']);
                 
                 // Cek stok
                 if ($product->qty < $item['quantity']) {
@@ -80,7 +80,7 @@ class TransactionController extends Controller
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
                     'product_id' => $item['product']->id,
-                    'product_name' => $item['product']->nama,
+                    'product_name' => $item['product']->nama_produk,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'subtotal' => $item['subtotal']

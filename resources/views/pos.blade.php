@@ -26,8 +26,12 @@
         </div>
 
         <div class="text-right text-gray-300 text-sm">
+          <a href="/dashboard">
+            <div class="action-btn px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
+              Dashboard Admin
+            </div>
+          </a>
           <p id="current-time" class="text-white font-semibold"></p>
-          <p class="text-xs">Welcome</p>
         </div>
       </div>
 

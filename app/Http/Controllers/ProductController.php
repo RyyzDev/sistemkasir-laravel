@@ -15,7 +15,7 @@ class ProductController extends Controller
             'price' => 'required',
             'qty' => 'required',
             'description' => 'nullable',
-            // 'nama' => 'required|max:100|unique:suppliers',
+            // 'nama' => 'required|max:100|unique:products',
             // 'qty' => 'required|max:100',
             // 'price' => 'required',
             //'deskripsi' => 'nullable|array',
@@ -49,10 +49,10 @@ class ProductController extends Controller
     {
         $query = $request->get('q', '');
         
-        $products = Supplier::select('id', 'nama', 'kode_supplier as kode', 'price', 'qty')
+        $products = Products::select('id', 'nama', 'kode_produk as kode', 'price', 'qty')
             ->where(function($q) use ($query) {
                 $q->where('nama', 'like', "%{$query}%")
-                  ->orWhere('kode_supplier', 'like', "%{$query}%");
+                  ->orWhere('kode_produk', 'like', "%{$query}%");
             })
             ->where('status', 1) // Hanya produk aktif
             ->orderBy('nama')

@@ -31,8 +31,8 @@
             } else {
                 this.cartItems.push({
                     id: product.id,
-                    nama: product.nama,
-                    kode: product.kode,
+                    nama: product.nama_produk,
+                    kode: product.kode_produk,
                     price: product.price,
                     quantity: 1,
                     subtotal: product.price,
@@ -84,7 +84,7 @@
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken ? csrfToken.content : '',
-                'Accept': 'application/json'  // TAMBAHKAN INI
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 items: items,
@@ -140,5 +140,9 @@
           this.modal = '';
           this.totalBayar = 0;
           this.kembalian = 0;
-        }
+        },
+        printStruk() {
+            // Kita cetak elemen di modal (dengan ID 'printArea')
+            window.print();
+        },
     }">

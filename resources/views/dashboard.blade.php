@@ -99,10 +99,9 @@
             </ul>
 
             <div class="mt-auto">
-                 <form action="/logout" method="post" class="menu-item flex items-center gap-3 bg-red-600/20 text-red-300 hover:bg-red-500 hover:text-white">
-                    @csrf
-                    <button type="submit">Logout</button>
-                </form>
+                 <a href="/pos" class="menu-item flex items-center gap-3 bg-blue-600/20 text-blue-300 hover:bg-blue-500 hover:text-white">
+                    Back to POS
+                </a>
             </div>
         </nav>
 
@@ -111,10 +110,9 @@
             <header class="top-bar p-4 flex justify-between items-center text-white">
                 <h2 class="text-xl font-semibold capitalize" x-text="activeTab"></h2>
                 <div class="flex items-center gap-4">
-                    <input type="text" placeholder="Cari global..." class="input-field bg-gray-700 text-white placeholder-gray-400 px-4 py-2 text-sm">
                     @auth
                     <div class="flex items-center gap-2">
-                        <img src="https://i.pravatar.cc/40?img=1" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-indigo-400">
+                        <img src="https://media.licdn.com/dms/image/v2/D5603AQEFt9f_jh0RzQ/profile-displayphoto-scale_200_200/B56ZiMkd.QH0AY-/0/1754705029140?e=1762992000&v=beta&t=vKZKYyNEIYvz89yb0cfyuc-dyu3zJ8v6pSHNTcNoUa8" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-indigo-400">
                         <div>
                             <div class="font-medium">{{ Auth::user()->name }}</div>
                             <div class="font-medium">Founder/CEO</div>
@@ -139,11 +137,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                         <div class="card p-6">
                             <h3 class="text-sm font-medium text-gray-500">Total Penjualan</h3>
-                            <p class="text-3xl font-bold gradient-text">Rp 120.5M</p>
+                            <p class="text-3xl font-bold gradient-text">{{ number_format($totalPenjualanKeseluruhan, 0, ',', '.') }}</p>
                         </div>
                         <div class="card p-6">
                             <h3 class="text-sm font-medium text-gray-500">Total Transaksi</h3>
-                            <p class="text-3xl font-bold gradient-text">1.480</p>
+                            <p class="text-3xl font-bold gradient-text">{{$totalTransaksi}}</p>
                         </div>
                         <div class="card p-6">
                             <h3 class="text-sm font-medium text-gray-500">Produk Terlaris</h3>
@@ -166,9 +164,11 @@
                         
                         <div class="card p-6">
                             <h3 class="font-semibold mb-4">Metode Pembayaran (Pie)</h3>
-                            <p class="text-center text-gray-400 p-8">
-                                [ Placeholder untuk Grafik Lingkaran ]
-                                </p>
+                            <div class="card p-6 shadow-xl">
+                             <h3 class="text-xl font-bold text-gray-800 mb-4">Top 10 Produk Terlaris</h3>
+                            <ol class="list-decimal pl-5 space-y-2">
+                               
+                        </div>
                         </div>
                     </div>
 
@@ -264,7 +264,7 @@
                             </thead>
 
                             <tbody>
-                            @foreach($products as $data)
+                            @foreach($suppliers as $data)
                                 <tr>
                                     <td class="p-4">{{$data->nama_supplier}}</td>
                                     <td class="p-4">{{$data->kode_supplier}}</td>
@@ -329,27 +329,30 @@
 
                 <div x-show="activeTab === 'invoice'" x-transition.opacity.duration.300ms>
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold">Cetak Invoice</h2>
+                        <h2 class="text-2xl font-semibold">Riwayat Transaksi</h2>
                     </div>
 
                     <div class="table-container shadow-lg">
                         <table class="w-full">
                             <thead>
                                 <tr>
-                                    <th class="p-4 text-left">ID Pesanan</th>
-                                    <th class="p-4 text-left">Pelanggan</th>
+                                    <th class="p-4 text-left">ID Transaksi</th>
+                                    <th class="p-4 text-left">Kasir</th>
                                     <th class="p-4 text-left">Tanggal</th>
-                                    <th class="p-4 text-left">Total</th>
-                                    <th class="p-4 text-left">Status Bayar</th>
+                                    <th class="p-4 text-left">Total Bayar</th>
+                                    <th class="p-4 text-left">Status</th>
                                     <th class="p-4 text-left">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach($transactions as $transaksi)
                                 <tr>
-                                    <td class="p-4">ORD-001</td>
-                                    <td class="p-4">PT. Maju Mundur</td>
-                                    <td class="p-4">18 Okt 2025</td>
-                                    <td class="p-4">Rp 15.000.000</td>
+                                    <td class="p-4">{{$transaksi->transaction_code}}</td>
+                                    <td class="p-4">
+                                        {{$transaksi->user_id}}
+                                    </td>
+                                    <td class="p-4">{{$transaksi->transaction_date}}</td>
+                                    <td class="p-4">{{number_format($transaksi->total_amount, 0, ',', '.')}}</td>
                                     <td class="p-4"><span class="badge bg-green-100 text-green-700">Lunas</span></td>
                                     <td class="p-4">
                                         <button class="action-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1">
@@ -358,19 +361,7 @@
                                         </button>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="p-4">ORD-002</td>
-                                    <td class="p-4">CV. Sinar Jaya</td>
-                                    <td class="p-4">17 Okt 2025</td>
-                                    <td class="p-4">Rp 5.200.000</td>
-                                    <td class="p-4"><span class="badge bg-yellow-100 text-yellow-700">Pending</span></td>
-                                    <td class="p-4">
-                                        <button class="action-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm flex items-center gap-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M5 2.5a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 .75.75v.5h1.75a3 3 0 0 1 3 3v9.5a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h1.75v-.5A.75.75 0 0 1 5 2.5ZM4.5 6a1.5 1.5 0 0 0-1.5 1.5v9.5a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V7.5a1.5 1.5 0 0 0-1.5-1.5H4.5Z" clip-rule="evenodd" /></svg>
-                                            Cetak
-                                        </button>
-                                    </td>
-                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
