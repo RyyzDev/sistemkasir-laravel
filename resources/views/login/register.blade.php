@@ -42,21 +42,28 @@
                 </div>
 
                
-                <!-- Submit -->
-                <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
-                    Register
-                </button>
+                <div>
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                        Register
+                    </button>
+                </div>
+                <div class="mt-auto">
+                     <a href="/login"
+                            class="w-full bg-gradient-to-r from-white-600 to-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                        Sudah Punya Akun? Login Disini!
+                    </a>
+                </div>
             </form>
 
-              <div class="bg-gray-50 text-center p-4 text-sm text-red-500">
+              <div class="bg-gray-50 text-center p-4 text-sm text-red-500 mt-5">
            cuma uji coba, langsung <a href="/login">LOGIN aja</a> pakai akun yang di sediakan yaa!
         </div>
         </div>
 
         <!-- Footer -->
         <div class="bg-gray-50 text-center p-4 text-sm text-gray-500">
-            &copy;  RyyzDev - All Rights Reserved
+            &copy;2025  <a href="https://github.com/RyyzDev" target="__blank">RyyzDev</a> - All Rights Reserved
         </div>
     </div>
     <script src="{{asset('js/script.js')}}"></script>

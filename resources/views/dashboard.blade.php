@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
@@ -24,12 +26,12 @@
 </head>
 <body 
     x-data="{ 
-        activeTab: 'dashboard', 
+        activeTab: 'laporan', 
         showProdukModal: false, 
         isEditMode: false,
         showGajiModal: false,
         showSupplierModal: false,
-        showKaryawanModal: false 
+        showKaryawanModal: false, 
     }"
 >
 
@@ -57,11 +59,11 @@
 
             <ul class="flex flex-col gap-2">
                 <li>
-                    <a @click="activeTab = 'dashboard'"
-                       :class="{ 'active': activeTab === 'dashboard' }"
+                    <a @click="activeTab = 'laporan'"
+                       :class="{ 'active': activeTab === 'laporan' }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3V6ZM3 15.75a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2.25Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25Z" clip-rule="evenodd" /></svg>
-                        Dashboard
+                        Laporan
                     </a>
                 </li>
                 <li>
@@ -103,6 +105,15 @@
                     Back to POS
                 </a>
             </div>
+
+             <div class="mt-0 p-0">
+                <form action="/logout" method="POST">
+                    @csrf
+                 <button type="submit" href="/logout" class="menu-item flex items-center gap-3 bg-red-600/20 text-red-300 hover:bg-red-500 hover:text-white">
+                    Logout
+                </button>
+            </form>
+            </div>
         </nav>
 
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -125,80 +136,10 @@
 
             <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
 
-                <div x-show="activeTab === 'dashboard'" x-transition.opacity.duration.300ms>
-                    <div class="mb-4">
-                        <select class="input-field">
-                            <option>Bulan Ini</option>
-                            <option>7 Hari Terakhir</option>
-                            <option>Hari Ini</option>
-                        </select>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                        <div class="card p-6">
-                            <h3 class="text-sm font-medium text-gray-500">Total Penjualan</h3>
-                            <p class="text-3xl font-bold gradient-text">{{ number_format($totalPenjualanKeseluruhan, 0, ',', '.') }}</p>
-                        </div>
-                        <div class="card p-6">
-                            <h3 class="text-sm font-medium text-gray-500">Total Transaksi</h3>
-                            <p class="text-3xl font-bold gradient-text">{{$totalTransaksi}}</p>
-                        </div>
-                        <div class="card p-6">
-                            <h3 class="text-sm font-medium text-gray-500">Produk Terlaris</h3>
-                            <p class="text-3xl font-bold gradient-text">Laptop Core i9</p>
-                        </div>
-                        <div class="card p-6">
-                            <h3 class="text-sm font-medium text-gray-500">Pelanggan Baru</h3>
-                            <p class="text-3xl font-bold gradient-text">210</p>
-                        </div>
-                    </div>
+      @include('components.dashboardcomponents.tablaporan')
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                        <div class="card lg:col-span-2 p-6">
-                            <h3 class="font-semibold mb-4">Grafik Tren Penjualan (Line) & Per Kategori (Bar)</h3>
-                            <p class="text-center text-gray-400 p-8">
-                                [ Placeholder untuk Grafik Garis & Batang ]<br>
-                                <span class="text-sm">(Membutuhkan library JS seperti Chart.js atau ApexCharts)</span>
-                            </p>
-                            </div>
-                        
-                        <div class="card p-6">
-                            <h3 class="font-semibold mb-4">Metode Pembayaran (Pie)</h3>
-                            <div class="card p-6 shadow-xl">
-                             <h3 class="text-xl font-bold text-gray-800 mb-4">Top 10 Produk Terlaris</h3>
-                            <ol class="list-decimal pl-5 space-y-2">
-                               
-                        </div>
-                        </div>
-                    </div>
 
-                    <div class="table-container shadow-lg">
-                        <table class="w-full">
-                            <thead>
-                                <tr>
-                                    <th class="p-4 text-left">ID Pesanan</th>
-                                    <th class="p-4 text-left">Pelanggan</th>
-                                    <th class="p-4 text-left">Total</th>
-                                    <th class="p-4 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="p-4">ORD-001</td>
-                                    <td class="p-4">PT. Maju Mundur</td>
-                                    <td class="p-4">Rp 15.000.000</td>
-                                    <td class="p-4"><span class="badge bg-green-100 text-green-700">Lunas</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4">ORD-002</td>
-                                    <td class="p-4">CV. Sinar Jaya</td>
-                                    <td class="p-4">Rp 5.200.000</td>
-                                    <td class="p-4"><span class="badge bg-yellow-100 text-yellow-700">Pending</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
 
                 <div x-show="activeTab === 'produk'" x-transition.opacity.duration.300ms>
                     <div class="flex justify-between items-center mb-6">

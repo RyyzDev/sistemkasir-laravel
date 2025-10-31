@@ -48,20 +48,24 @@
                 </div>
 
                 <!-- Submit -->
-                <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
-                    Masuk
-                </button>
-                 <a href="/register"
-                        class="w-full bg-gradient-to-r from-white-600 to-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
-                    Belum Punya Akun? Daftar!
-                </a>
+                <div>
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                        Masuk
+                    </button>
+                </div>
+                <div class="mt-auto">
+                     <a href="/register"
+                            class="w-full bg-gradient-to-r from-white-600 to-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                        Belum Punya Akun? Daftar Disini!
+                    </a>
+                </div>
             </form>
         </div>
 
         <!-- Footer -->
         <div class="bg-gray-50 text-center p-4 text-sm text-gray-500">
-            &copy;  RyyzDev - All Rights Reserved
+            &copy;2025 <a href="https://github.com/RyyzDev" target="__blank">RyyzDev</a> - All Rights Reserved
         </div>
     </div>
     <script src="{{asset('js/script.js')}}"></script>

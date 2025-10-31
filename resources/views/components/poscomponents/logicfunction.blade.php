@@ -9,6 +9,10 @@
         kembalian: 0,
         products: {{ Js::from($products) }},
         deskripsi: [''],
+        reportPeriod: 'bulan',
+        selectedMonth: new Date().getMonth(),
+        selectedYear: new Date().getFullYear(),
+        charts: {},
 
         get searchResults() {
             if (this.searchQuery === '') {
@@ -18,6 +22,260 @@
                 p.nama.toLowerCase().includes(this.searchQuery.toLowerCase())
             );
         },
+
+      salesData: [],
+
+      get searchResults() {
+          if (this.searchQuery === '') {
+              return this.products;
+          }
+          return this.products.filter(p => 
+              p.nama.toLowerCase().includes(this.searchQuery.toLowerCase())
+          );
+      },
+      
+      getTotalSales() {
+        return this.salesData.reduce((sum, sale) => sum + sale.total, 0);
+      },
+      
+      getTotalTransactions() {
+        return this.salesData.length;
+      },
+      
+      getAverageTransaction() {
+        return this.getTotalTransactions() > 0 ? Math.round(this.getTotalSales() / this.getTotalTransactions()) : 0;
+      },
+      
+      getDailySalesData() {
+        const groupedData = {};
+        this.salesData.forEach(sale => {
+          if (!groupedData[sale.date]) {
+            groupedData[sale.date] = 0;
+          }
+          groupedData[sale.date] += sale.total;
+        });
+        return groupedData;
+      },
+      
+      getProductSalesData() {
+        const groupedData = {};
+        this.salesData.forEach(sale => {
+          if (!groupedData[sale.product]) {
+            groupedData[sale.product] = 0;
+          }
+          groupedData[sale.product] += sale.total;
+        });
+        return groupedData;
+      },
+      
+      getPaymentMethodData() {
+        const groupedData = {};
+        this.salesData.forEach(sale => {
+          if (!groupedData[sale.method]) {
+            groupedData[sale.method] = 0;
+          }
+          groupedData[sale.method] += sale.total;
+        });
+        return groupedData;
+      },
+      
+      async fetchSalesData() {
+        try {
+          const params = new URLSearchParams({
+            period: this.reportPeriod,
+            month: parseInt(this.selectedMonth) + 1,
+            year: this.selectedYear
+          });
+          
+          const response = await fetch(`{{ route('sales.report') }}?${params}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Gagal mengambil data');
+          }
+          
+          const data = await response.json();
+          
+          if (data.success && data.sales) {
+            this.salesData = data.sales;
+          }
+          
+          this.initCharts();
+          
+        } catch (error) {
+          console.error('Error fetching sales data:', error);
+          alert('Gagal memuat data laporan. Menggunakan data dummy.');
+          this.salesData = [
+            { date: '2024-10-01', product: 'Produk 1', quantity: 5, total: 250000, method: 'Cash' },
+            { date: '2024-10-02', product: 'Produk 2', quantity: 3, total: 225000, method: 'QRIS' },
+            { date: '2024-10-03', product: 'Produk 3', quantity: 2, total: 200000, method: 'Cash' },
+          ];
+          this.initCharts();
+        }
+      },
+      
+      initCharts() {
+        this.$nextTick(() => {
+          this.drawBarChart();
+          this.drawLineChart();
+          this.drawPieChart();
+        });
+      },
+      
+      drawBarChart() {
+        const ctx = document.getElementById('barChart');
+        if (!ctx) return;
+        
+        if (this.charts.bar) {
+          this.charts.bar.destroy();
+        }
+        
+        const productData = this.getProductSalesData();
+        this.charts.bar = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(productData),
+            datasets: [{
+              label: 'Penjualan per Produk',
+              data: Object.values(productData),
+              backgroundColor: [
+                'rgba(102, 126, 234, 0.8)',
+                'rgba(118, 75, 162, 0.8)',
+                'rgba(244, 63, 94, 0.8)',
+              ],
+              borderColor: [
+                'rgba(102, 126, 234, 1)',
+                'rgba(118, 75, 162, 1)',
+                'rgba(244, 63, 94, 1)',
+              ],
+              borderWidth: 2,
+              borderRadius: 8,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return 'Rp ' + value.toLocaleString('id-ID');
+                  }
+                }
+              }
+            }
+          }
+        });
+      },
+      
+      drawLineChart() {
+        const ctx = document.getElementById('lineChart');
+        if (!ctx) return;
+        
+        if (this.charts.line) {
+          this.charts.line.destroy();
+        }
+        
+        const dailyData = this.getDailySalesData();
+        this.charts.line = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Object.keys(dailyData).sort(),
+            datasets: [{
+              label: 'Penjualan Harian',
+              data: Object.keys(dailyData).sort().map(date => dailyData[date]),
+              borderColor: 'rgba(102, 126, 234, 1)',
+              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return 'Rp ' + value.toLocaleString('id-ID');
+                  }
+                }
+              }
+            }
+          }
+        });
+      },
+      
+      drawPieChart() {
+        const ctx = document.getElementById('pieChart');
+        if (!ctx) return;
+        
+        if (this.charts.pie) {
+          this.charts.pie.destroy();
+        }
+        
+        const methodData = this.getPaymentMethodData();
+        this.charts.pie = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(methodData),
+            datasets: [{
+              data: Object.values(methodData),
+              backgroundColor: [
+                'rgba(102, 126, 234, 0.8)',
+                'rgba(118, 75, 162, 0.8)',
+                'rgba(244, 63, 94, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+              ],
+              borderColor: [
+                'rgba(102, 126, 234, 1)',
+                'rgba(118, 75, 162, 1)',
+                'rgba(244, 63, 94, 1)',
+                'rgba(16, 185, 129, 1)',
+              ],
+              borderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+              }
+            }
+          }
+        });
+      },
+
+
         addToCart(product) {
             const existingItem = this.cartItems.find(item => item.id === product.id);
             if (existingItem) {
