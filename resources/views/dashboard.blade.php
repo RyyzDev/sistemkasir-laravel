@@ -26,30 +26,76 @@
 </head>
 <body 
     x-data="{ 
-        activeTab: 'laporan', 
+        activeTab: localStorage.getItem('activeTab') || 'laporan', 
+    setActiveTab(tabName) {
+        this.activeTab = tabName;
+        localStorage.setItem('activeTab', tabName); 
+    },
         showProdukModal: false, 
         isEditMode: false,
         showGajiModal: false,
         showSupplierModal: false,
-        showKaryawanModal: false, 
+        showKaryawanModal: false,
+        selectedKaryawan: null,
+        openGajiModal(karyawan) {
+            this.selectedKaryawan = karyawan; // Set data karyawan
+            this.showGajiModal = true;        // Buka modal
+    },
+        showSlipGaji: false,
+        slipData: {},
+    formData: {
+        periode: '{{ date('Y-m') }}',
+        gajiPokok: null,
+        bonus: null,
+        potongan: null
+    },
+    resetForm() {
+        this.formData.gajiPokok = null;
+        this.formData.bonus = null;
+        this.formData.potongan = null;
+        this.selectedKaryawan = null; // Reset karyawan juga
+    },
+    prosesGaji() {
+        //Ambil & hitung data dari formData
+        const pokok = parseFloat(this.formData.gajiPokok) || 0;
+        const bonus = parseFloat(this.formData.bonus) || 0;
+        const potongan = parseFloat(this.formData.potongan) || 0;
+        const totalPenerimaan = pokok + bonus;
+        const gajiBersih = totalPenerimaan - potongan;
+
+        //data untuk slip
+        this.slipData = {
+            nama: this.selectedKaryawan.name,
+            periode: this.formData.periode,
+            gajiPokok: pokok,
+            bonus: bonus,
+            totalPenerimaan: totalPenerimaan,
+            potongan: potongan,
+            gajiBersih: gajiBersih,
+            tanggalProses: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+        };
+        //Tutup modal form & tampilkan modal slip
+        this.showGajiModal = false;
+        this.showSlipGaji = true;
+    },
+    printSlip() {
+    document.body.classList.add('printing-slip');
+    
+    setTimeout(() => {
+        window.print();
+        window.onafterprint = function() {
+            document.body.classList.remove('printing-slip');
+        };
+    }, 100);
+},
     }"
 >
 
 @include('components.poscomponents.logicfunction')
-<!-- @if(session('success'))
-      <div class="max-w-7xl mx-auto px-6 pt-4">
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-              {{ session('success') }}
-          </div>
-      </div>
-  @endif
 
-  @if(session('error'))
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {{ session('error') }}
-          </div>
-      </div>
-  @endif -->
+
+@include('components.dashboardcomponents.notifikasi')
+
 
     <div class="app-container w-[95%] h-[95vh] max-w-screen-2xl mx-auto flex">
         <nav class="w-64 bg-gray-900 text-white flex-shrink-0 p-4 flex flex-col">
@@ -59,40 +105,40 @@
 
             <ul class="flex flex-col gap-2">
                 <li>
-                    <a @click="activeTab = 'laporan'"
-                       :class="{ 'active': activeTab === 'laporan' }"
+                    <a @click="setActiveTab('laporan')"
+                       :class="{ 'active': ActiveTab('laporan') }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3v2.25a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3V6ZM3 15.75a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2.25Zm12 0a3 3 0 0 1 3-3H21a3 3 0 0 1 3 3V18a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25Z" clip-rule="evenodd" /></svg>
                         Laporan
                     </a>
                 </li>
                 <li>
-                    <a @click="activeTab = 'produk'"
-                       :class="{ 'active': activeTab === 'produk' }"
+                    <a @click="setActiveTab('produk')"
+                       :class="{ 'active': ActiveTab('produk') }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a.375.375 0 0 1-.375-.375V6.375A3.75 3.75 0 0 0 10.5 2.625H8.625a.375.375 0 0 1-.375-.375V1.5H5.625ZM12 9.375A.375.375 0 0 0 11.625 9H9.375A.375.375 0 0 0 9 9.375v2.25c0 .207.168.375.375.375h2.25A.375.375 0 0 0 12 11.625v-2.25Z" /><path d="M14.25 1.5c.207 0 .375.168.375.375v2.25A3.75 3.75 0 0 0 18.375 7.875h2.25A.375.375 0 0 0 21 7.5V5.625c0-1.036-.84-1.875-1.875-1.875h-2.25a.375.375 0 0 1-.375-.375V1.5h-2.25Z" /></svg>
                         Produk
                     </a>
                 </li>
                 <li>
-                    <a @click="activeTab = 'supplier'"
-                       :class="{ 'active': activeTab === 'supplier' }"
+                    <a @click="setActiveTab('supplier')"
+                       :class="{ 'active': ActiveTab('supplier') }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M4.5 6.375a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 .75.75v11.25a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V6.375Z" /><path fill-rule="evenodd" d="M20.25 2.25A.75.75 0 0 0 19.5 3v1.125a.75.75 0 0 0 .75.75h1.5a.75.75 0 0 0 .75-.75V3a.75.75 0 0 0-.75-.75h-1.5ZM2.25 4.875a.75.75 0 0 0-.75.75v11.25c0 .414.336.75.75.75h.001a.75.75 0 0 0 .75-.75V5.625a.75.75 0 0 0-.75-.75H2.25ZM19.5 19.875v1.125a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V19.875c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75Z" clip-rule="evenodd" /></svg>
                         Supplier
                     </a>
                 </li>
                 <li>
-                    <a @click="activeTab = 'karyawan'"
-                       :class="{ 'active': activeTab === 'karyawan' }"
+                    <a @click="setActiveTab('karyawan')"
+                       :class="{ 'active': ActiveTab('karyawan') }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75ZM4.5 9.75a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75c0 .414-.336.75-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75ZM15 12a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75ZM4.5 12a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 .75.75v.75c0 .414-.336.75-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75ZM12 15a.75.75 0 0 0-1.5 0v.75c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75v-.75Z" clip-rule="evenodd" /><path d="M3 18.75a.75.75 0 0 0-1.5 0v.75c0 1.12 1.006 2.03 2.25 2.03h15c1.244 0 2.25-1.031 2.25-2.28v-.51a.75.75 0 0 0-1.5 0v.51c0 .323-.323.57-.75.57h-15c-.427 0-.75-.247-.75-.57v-.75Z" /></svg>
                         Karyawan
                     </a>
                 </li>
                 <li>
-                    <a @click="activeTab = 'invoice'"
-                       :class="{ 'active': activeTab === 'invoice' }"
+                    <a @click="setActiveTab('invoice')"
+                       :class="{ 'active': ActiveTab('invoice') }"
                        class="menu-item flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v11.25C1.5 17.16 2.34 18 3.375 18h9.75v1.5H6A.75.75 0 0 0 6 21h12a.75.75 0 0 0 0-1.5h-7.125v-1.5h9.75c1.036 0 1.875-.84 1.875-1.875V4.875C22.5 3.839 21.66 3 20.625 3H3.375Z" /><path d="M9 9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H9Z" /></svg>
                         Invoice
@@ -168,12 +214,16 @@
                                     <th class="p-4">{{$produk->price}}</th>
                                     <th class="p-4">{{$produk->qty}}</th>
                                     <td class="p-4 flex gap-2">
-                                        <button @click="showProdukModal = true; isEditMode = true;" class="action-btn bg-yellow-500 hover:bg-yellow-600 text-white p-2">
+                                        <button disabled @click="showProdukModal = true; isEditMode = true;" class="action-btn bg-yellow-500 hover:cursor-not-allowed bg-yellow-600 text-white p-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" /></svg>
                                         </button>
-                                        <button class="action-btn bg-red-500 hover:bg-red-600 text-white p-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
-                                        </button>
+                                        <form action="{{route('products.destroy', $produk->id)}}" method="POST">                                            
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="action-btn bg-red-500 hover:bg-red-600 text-white p-2" onclick="return confirm('Apakah Anda yakin ingin menghapus postingan ini?');">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                         @endforeach
@@ -254,9 +304,11 @@
                                     <td class="p-4">{{$karyawan->email}}</td>
                                     <td class="p-4"><span class="status-badge status-active">Aktif</span></td>
                                     <td class="p-4 flex gap-2">
-                                        <button @click="showGajiModal = true" class="action-btn bg-green-500 hover:bg-green-600 text-white p-2" title="Proses Gaji">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.25a.75.75 0 0 1-1.5 0V5H2v1.25a.75.75 0 0 1-1.5 0V4ZM2.5 8.5A.75.75 0 0 1 3.25 8h13.5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-.75.75H3.25a.75.75 0 0 1-.75-.75v-6.5ZM3 9.25v5.5h14v-5.5H3Z" clip-rule="evenodd" /></svg>
-                                        </button>
+                                            <button @click="openGajiModal({name: '{{$karyawan->name}}'})" 
+                                                class="action-btn bg-green-500 hover:bg-green-600 text-white p-2" 
+                                                title="Proses Gaji">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.25a.75.75 0 0 1-1.5 0V5H2v1.25a.75.75 0 0 1-1.5 0V4ZM2.5 8.5A.75.75 0 0 1 3.25 8h13.5a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-.75.75H3.25a.75.75 0 0 1-.75-.75v-6.5ZM3 9.25v5.5h14v-5.5H3Z" clip-rule="evenodd" /></svg>
+                                            </button>
                                         <button class="action-btn bg-red-500 hover:bg-red-600 text-white p-2" title="Hapus Karyawan">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.11-2.368.11a.75.75 0 0 0-.75.75v1.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 0-.75-.75c-.788 0-1.573-.033-2.368-.11V3.75A2.75 2.75 0 0 0 14 1H8.75ZM6 6.443v-.693A1.25 1.25 0 0 1 7.25 4.5h5.5A1.25 1.25 0 0 1 14 5.75v.693c-1.12.08-2.288.11-3.5.11s-2.38-.03-3.5-.11Z" clip-rule="evenodd" /><path d="M5.25 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75h9.5a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75h-9.5Z" /></svg>
                                         </button>
@@ -429,43 +481,152 @@
         </div>
     </div>
 
-    <div x-show="showGajiModal" @keydown.escape.window="showGajiModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
-        <div @click.outside="showGajiModal = false" class="modal-content bg-white w-full max-w-md p-8 shadow-xl">
+
+  <div x-show="showGajiModal" @keydown.escape.window="showGajiModal = false" class="modal-overlay fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" x-transition>
+        <div @click.outside="showGajiModal = false; resetForm()" class="modal-content bg-white w-full max-w-md p-8 shadow-xl">
             <h2 class="text-2xl font-semibold mb-6 gradient-text">Proses Gaji Karyawan</h2>
-            <form action="#" method="POST" class="space-y-4">
-                @csrf
+            
+            <form @submit.prevent="prosesGaji()" class="space-y-4">
+                @csrf 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Nama Karyawan</label>
-                    <input type="text" class="input-field w-full mt-1 p-3 bg-gray-100" value="Andi Wijaya" readonly>
+                    <input type="text" class="input-field w-full mt-1 p-3 bg-gray-100" :value="selectedKaryawan ? selectedKaryawan.name : ''" readonly>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Periode Gaji</label>
-                    <input type="month" class="input-field w-full mt-1 p-3" value="{{ date('Y-m') }}">
+                    <input type="month" x-model="formData.periode" class="input-field w-full mt-1 p-3" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Gaji Pokok</label>
-                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="5000000">
+                    <input type="number" x-model="formData.gajiPokok" class="input-field w-full mt-1 p-3" placeholder="5000000" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Bonus/Tunjangan</label>
-                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="500000">
+                    <input type="number" x-model="formData.bonus" class="input-field w-full mt-1 p-3" placeholder="500000">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Potongan (PPh, dll)</label>
-                    <input type="number" class="input-field w-full mt-1 p-3" placeholder="250000">
+                    <input type="number" x-model="formData.potongan" class="input-field w-full mt-1 p-3" placeholder="250000">
                 </div>
                 
                 <div class="flex justify-end gap-3 pt-4">
-                    <button @click="showGajiModal = false" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
+                    <button @click="showGajiModal = false; resetForm()" type="button" class="action-btn bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2">
                         Batal
                     </button>
                     <button type="submit" class="action-btn bg-green-600 hover:bg-green-700 text-white px-5 py-2">
-                        Bayar & Buat Slip
+                        Buat Slip Gaji
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+  <template x-if="showSlipGaji">
+    <div class="fixed inset-0 bg-black bg-opacity-70 modal-overlay modal-overlay-slip flex items-center justify-center z-50 p-10 overflow-y-auto">
+        
+        <div id="printAreaSlipGaji" class="modal-content modal-content-slip bg-white max-w-4xl w-full p-6 sm:p-8 rounded-lg shadow-2xl relative">
+            
+            <div  class="p-4 border border-gray-200">
+                
+                <div class="flex justify-between items-start mb-6 pb-4 border-b border-gray-300">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Ryyz MART</h2>
+                        <p class="text-sm text-gray-500">UIN Syarif Hidayatullah Jakarta</p>
+                        <p class="text-sm text-gray-500">Telp: 0812-3456-7891</p>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-3xl strong font-semibold text-black-700">SLIP GAJI</h2>
+                        <p class="text-lg font-medium text-gray-600">
+                            Periode: <span class="font-bold" x-text="new Date(slipData.periode + '-02').toLocaleString('id-ID', { month: 'long', year: 'numeric' })"></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 pb-4 border-b border-dashed">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Nama Karyawan:</span>
+                        <span class="font-bold text-gray-800" x-text="slipData.nama"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tanggal Proses:</span>
+                        <span class="font-bold text-gray-800" x-text="slipData.tanggalProses"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">ID Karyawan:</span>
+                        <span class="font-bold text-gray-800">KRY-XXXX</span> </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Jabatan:</span>
+                        <span class="font-bold text-gray-800">Staff</span> </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-x-8">
+                    
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-semibold text-green-700 mb-3 border-b-2 border-green-200 pb-2">PENERIMAAN</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Gaji Pokok</span>
+                                <span class="font-medium" x-text="formatRupiah(slipData.gajiPokok)"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Bonus/Tunjangan</span>
+                                <span class="font-medium" x-text="formatRupiah(slipData.bonus)"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between font-bold text-gray-800 pt-3 border-t-2 border-gray-300 mt-4">
+                            <span>TOTAL PENERIMAAN</span>
+                            <span x-text="formatRupiah(slipData.totalPenerimaan)"></span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-semibold text-red-700 mb-3 border-b-2 border-red-200 pb-2">POTONGAN</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Potongan (PPh, dll)</span>
+                                <span class="font-medium" x-text="formatRupiah(slipData.potongan)"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between font-bold text-gray-800 pt-3 border-t-2 border-gray-300 mt-4">
+                            <span>TOTAL POTONGAN</span>
+                            <span x-text="formatRupiah(slipData.potongan)"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 mt-6 bg-gray-100 rounded-lg p-4">
+                    <div class="flex justify-between items-center font-bold text-xl">
+                        <span>GAJI BERSIH (Take-Home Pay)</span>
+                        <span class="text-blue-700 text-2xl" x-text="formatRupiah(slipData.gajiBersih)"></span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 italic" x-show="typeof terbilang === 'function'">
+                        Terbilang: "<span x-text="terbilang(slipData.gajiBersih)"></span>"
+                    </p>
+                </div>
+
+                <div class="mt-12 pt-4 text-sm text-gray-600 flex justify-between">
+                    <div class="text-center">
+                        <p>Diterima oleh,</p>
+                        <p class="mt-16 font-bold border-t border-gray-400 pt-1" x-text="slipData.nama"></p>
+                    </div>
+                    <div class="text-center">
+                        <p>Disetujui oleh,</p>
+                        <p class="mt-16 font-bold border-t border-gray-400 pt-1">(Manajer HRD / Keuangan)</p>
+                    </div>
+                </div>
+            </div> <div class="mt-6 flex gap-3 print:hidden">
+                <button @click="printSlip()" class="flex-1 action-btn px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                    🖨️ Cetak Slip
+                </button>
+                <button @click="showSlipGaji = false; resetForm()" class="flex-1 action-btn px-5 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors">
+                    Tutup
+                </button>
+            </div>
+
+        </div>
+    </div>
+</template>
+
     
     <script>
         window.addEventListener('load', function() {

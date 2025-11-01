@@ -285,44 +285,120 @@ Titik loading */.dots {
 
 
 
-    /* ---- PRINT OPTIMIZATION (Untuk Struk Thermal) ---- */
-
 @media print {
+    /* Pengaturan halaman default (untuk slip gaji) */
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    /* Reset body */
     body {
-        /* Hapus margin agar struk rata */
         margin: 0 !important;
         padding: 0 !important;
-        
-        /* Gunakan font monospace agar rapi */
-        font-family: 'monospace', 'Courier New', Courier, monospace !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-    /* Sembunyikan semua elemen kecuali area cetak */
+    /* Sembunyikan SEMUA elemen terlebih dahulu */
     body * {
-        visibility: hidden;
+        visibility: hidden !important;
     }
 
-    /* Tampilkan hanya modal struk */
-    #printArea, #printArea * {
-        visibility: visible;
+    /* ==========================================
+       SLIP GAJI (A4)
+       ========================================== */
+    
+    /* Tampilkan hanya area slip gaji dan isinya */
+    #printAreaSlipGaji,
+    #printAreaSlipGaji * {
+        visibility: visible !important;
     }
 
-    /* Posisikan area cetak */
+    /* Posisikan slip gaji di awal halaman */
+    #printAreaSlipGaji {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    /* Pastikan border dan background color tercetak */
+    #printAreaSlipGaji .border,
+    #printAreaSlipGaji .border-t,
+    #printAreaSlipGaji .border-b,
+    #printAreaSlipGaji .border-gray-300,
+    #printAreaSlipGaji .border-gray-200,
+    #printAreaSlipGaji .bg-gray-100,
+    #printAreaSlipGaji .text-green-700,
+    #printAreaSlipGaji .text-red-700,
+    #printAreaSlipGaji .text-blue-700,
+    #printAreaSlipGaji .border-green-200,
+    #printAreaSlipGaji .border-red-200 {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Sembunyikan modal overlay background */
+    .modal-overlay,
+    .modal-overlay-slip {
+        position: static !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+    }
+
+    /* Sembunyikan tombol aksi */
+    .print\:hidden,
+    button {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Sembunyikan navigasi dan header */
+    nav,
+    header,
+    .top-bar {
+        display: none !important;
+    }
+
+    /* Override ukuran halaman untuk slip gaji */
+    body.printing-slip @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    /* ==========================================
+       STRUK THERMAL (POS)
+       ========================================== */
+    
+    #printArea,
+    #printArea * {
+        visibility: visible !important;
+    }
+
     #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%; /* Atau sesuai lebar kertas thermal Anda */
-        margin: 0;
-        padding: 0;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 58mm !important;
+        max-width: 58mm !important;
+        margin: 0 !important;
+        padding: 2mm !important;
         box-shadow: none !important;
         border: none !important;
-        /* Batasi lebar untuk meniru struk thermal */
-        max-width: 58mm; /* Sesuaikan dengan lebar printer Anda */
     }
 
-    /* Pastikan tombol tidak ikut tercetak */
-    .print\:hidden {
-        display: none !important;
+    /* Override ukuran halaman untuk struk thermal */
+    body.printing-thermal @page {
+        size: 58mm auto;
+        margin: 2mm;
     }
 }

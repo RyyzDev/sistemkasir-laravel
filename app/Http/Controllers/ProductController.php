@@ -78,4 +78,11 @@ class ProductController extends Controller
             'data' => $products
         ]);
     }
+
+    public function destroy($id){
+       $hapus = Products::findOrFail($id);
+       $hapus->delete();
+
+       return redirect()->route('dashboard')->with('success', 'Produk Berhasil dihapus'); 
+    }
 }

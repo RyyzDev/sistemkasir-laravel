@@ -5,16 +5,17 @@
             <p class="text-gray-500">Analisis dan laporan penjualan lengkap</p>
           </div>
 
+
           <!-- Filter Periode -->
           <div class="card p-6">
             <div class="flex gap-4 flex-wrap items-center">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Periode</label>
                 <select x-model="reportPeriod" @change="fetchSalesData()" class="input-field px-4 py-2">
-                  <option value="hari">Hari Ini</option>
+                  <option value="hari" selected>Hari Ini</option>
                   <option value="minggu">7 Hari Terakhir</option>
-                  <option value="bulan" selected>Bulan Ini</option>
-                  <option value="tahun">Tahun Ini</option>
+                  <option value="bulan">Perbulan</option>
+                  <option value="tahun">Pertahun</option>
                 </select>
               </div>
               <div x-show="reportPeriod === 'bulan'">
@@ -34,7 +35,7 @@
                   <option value="11">Desember</option>
                 </select>
               </div>
-              <div>
+              <div x-show="reportPeriod != 'hari' && reportPeriod != 'minggu'">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Tahun</label>
                 <select x-model="selectedYear" @change="fetchSalesData()" class="input-field px-4 py-2">
                   <option value="2024">2024</option>
@@ -43,7 +44,7 @@
               </div>
               <div class="ml-auto">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">&nbsp;</label>
-                <button @click="fetchSalesData()" class="action-btn px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
+                <button @click="window.location.reload();" class="action-btn px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
                   🔄 Refresh Data
                 </button>
               </div>
@@ -127,7 +128,7 @@
           <div class="card overflow-hidden">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
               <h3 class="text-xl font-bold text-gray-800">📋 Detail Transaksi</h3>
-              <button class="action-btn px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
+              <button @click="exportToCSV()" class="action-btn px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl">
                 📥 Export Excel
               </button>
             </div>

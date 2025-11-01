@@ -9,7 +9,7 @@
         kembalian: 0,
         products: {{ Js::from($products) }},
         deskripsi: [''],
-        reportPeriod: 'bulan',
+        reportPeriod: 'hari',
         selectedMonth: new Date().getMonth(),
         selectedYear: new Date().getFullYear(),
         charts: {},
@@ -24,6 +24,35 @@
         },
 
       salesData: [],
+
+      exportToCSV() {
+        let csvContent = 'data:text/csv;charset=utf-8,';
+        
+        // Tambahkan header
+        const headers = ['Tanggal', 'Produk', 'Qty', 'Total', 'Metode'];
+        csvContent += headers.join(',') + '\n';
+
+        // Tambahkan baris data
+        this.salesData.forEach(sale => {
+            const row = [
+                new Date(sale.date).toLocaleDateString('id-ID'),
+                sale.product,
+                sale.quantity,
+                sale.total, // Mungkin perlu penyesuaian jika Anda ingin nilai mentah tanpa format rupiah
+                sale.method
+            ].join(',');
+            csvContent += row + '\n';
+        });
+
+        // Buat tautan unduhan
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'detail_transaksi.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
 
       get searchResults() {
           if (this.searchQuery === '') {
@@ -180,6 +209,8 @@
           }
         });
       },
+
+
       
       drawLineChart() {
         const ctx = document.getElementById('lineChart');
@@ -319,6 +350,7 @@
         getTotal() {
             return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
         },
+
         async prosesPembayaran() {
     const total = this.getTotal();
     if (this.totalBayar < total) {

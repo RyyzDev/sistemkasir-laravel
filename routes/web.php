@@ -14,7 +14,7 @@ use App\Http\Controllers\SalesController;
 
 
 
-
+Route::get('/', [loginController::class, 'index'])->name('login')->middleware('guest');
 Route::get('/login', [loginController::class, 'index'])->name('login')->middleware('guest');
 Route::get('/register', [registerController::class, 'index'])->middleware('guest')->name('register');
 Route::post('/login', [loginController::class, 'authenticate']);
@@ -28,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
 	Route::post('/register', [registerController::class, 'store']);
 	Route::post('/productregister', [ProductController::class, 'store']);
 	Route::post('/suppliers', [SupplierController::class, 'store']);
-	Route::delete('/destroy/{id}', [SupplierController::class, 'destroy'])->name('products.destroy')->middleware('auth');
+	Route::delete('/destroy/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 	Route::post('/logout', [loginController::class, 'logout']);
 

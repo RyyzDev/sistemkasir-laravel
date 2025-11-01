@@ -13,6 +13,11 @@
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center">
             <h1 class="text-2xl md:text-3xl font-bold text-white">Sistem Kasir</h1>
             <p class="text-sm text-indigo-100 mt-1">Silakan login untuk melanjutkan</p>
+            <p class="text-sm text-indigo-100 mt-1">GUNAKAN AKUN INI!:</p>
+            <p class="text-sm text-indigo-100 mt-1">
+                email       : admin@admin.com <br>
+                password    : admin1234
+            </p>
         </div>
 
 

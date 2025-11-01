@@ -107,7 +107,7 @@
       <template x-if="showSuccess">
     <div class="fixed inset-0 bg-black bg-opacity-70 modal-overlay flex items-center justify-center z-50 p-4">
         
-        <div class="modal-content bg-white max-w-xs w-full p-4 rounded-lg shadow-2xl relative font-mono text-xs" id="printArea">
+        <div class="printing-thermal modal-content bg-white max-w-xs w-full p-4 rounded-lg shadow-2xl relative font-mono text-xs" id="printArea">
             
             <h2 class="text-center font-bold text-base mb-1">Ryyz MART</h2>
             

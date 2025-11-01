@@ -12,7 +12,8 @@
         <!-- Header -->
         <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center">
             <h1 class="text-2xl md:text-3xl font-bold text-white">Sistem Kasir</h1>
-            <p class="text-sm text-indigo-100 mt-1">Silakan daftar untuk melanjutkan</p>
+            <p class="text-sm text-indigo-100 mt-1">SILAHKAN LOGIN MENGGUNAKAN AKUN YANG TELAH DI SEDIAKAN</p>
+            <p class="text-sm text-indigo-100 mt-1">KARENA HALAMAN INI HANYA UJI COBA!!</p>
         </div>
 
         <!-- Form -->
@@ -42,9 +43,9 @@
                 </div>
 
                
-                <div>
-                    <button type="submit"
-                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:opacity-90 transition duration-300">
+                <div disabled>
+                    <button disabletype="submit"
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-md hover:cursor-not-allowed opacity-90 transition duration-300">
                         Register
                     </button>
                 </div>
